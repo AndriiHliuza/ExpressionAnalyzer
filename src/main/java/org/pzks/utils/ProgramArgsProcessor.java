@@ -11,7 +11,6 @@ public class ProgramArgsProcessor {
     public ProgramArgsProcessor(String[] args) {
         this.programKeys = Arrays.stream(args).toList();
 
-
         StringBuilder programKeysPattern = new StringBuilder("^(");
         for (ProgramKey programKey : ProgramKey.values()) {
             programKeysPattern.append("(").append(programKey.getValue()).append(")|");
@@ -19,7 +18,7 @@ public class ProgramArgsProcessor {
         programKeysPattern.deleteCharAt(programKeysPattern.length() - 1);
         programKeysPattern.append(")$");
 
-        if (getExpression().matches(programKeysPattern.toString())) {
+        if (programKeys.isEmpty() || getExpression().matches(programKeysPattern.toString())) {
             HeadlinePrinter.print("Program Usage", Color.CYAN);
             System.out.println("Available keys:");
             for (int i = 0; i < ProgramKey.values().length; i++) {
