@@ -18,7 +18,7 @@ public class Operation extends SyntaxUnit {
     public String treeUnitRepresentation() {
         return "Operation{" +
                 "index='" + getIndex() + '\'' +
-                ", value='" + getValue() +
+                ", value='" + getValue() + '\'' +
                 '}';
     }
 }

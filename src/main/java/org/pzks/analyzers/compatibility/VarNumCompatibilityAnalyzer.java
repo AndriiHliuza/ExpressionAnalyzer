@@ -1,7 +1,6 @@
 package org.pzks.analyzers.compatibility;
 
 import org.pzks.units.*;
-import org.pzks.units.Number;
 
 public abstract class VarNumCompatibilityAnalyzer extends PlainSyntaxUnitCompatibilityAnalyzer {
     public VarNumCompatibilityAnalyzer(SyntaxUnit previous, SyntaxUnit current) {
@@ -12,9 +11,7 @@ public abstract class VarNumCompatibilityAnalyzer extends PlainSyntaxUnitCompati
     public boolean isCompatibleWithPreviousSyntaxUnit() {
         boolean isCompatible = false;
 
-        if (getCurrent() == null || getPrevious() == null || !(getCurrent() instanceof Number)) {
-            return false;
-        } else if (getPrevious() instanceof Operation ||
+        if (getPrevious() instanceof Operation ||
                 getPrevious() instanceof UnknownSyntaxUnitSequence ||
                 getPrevious() instanceof UnknownSyntaxUnit) {
             isCompatible = true;

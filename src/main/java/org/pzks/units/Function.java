@@ -81,7 +81,7 @@ public class Function extends SyntaxContainer {
 
         return "Function{" +
                 "index='" + getIndex() + '\'' +
-                ", value='" + value +
+                ", value='" + value + '\'' +
                 '}';
     }
 }

@@ -18,7 +18,12 @@ public class UnknownSyntaxUnit extends SyntaxUnit {
     public String treeUnitRepresentation() {
         return "UnknownSyntaxUnit{" +
                 "index='" + getIndex() + '\'' +
-                ", value='" + getValue() +
+                ", value='" + getValue() + '\'' +
                 '}';
+    }
+
+    @Override
+    public String name() {
+        return "Unknown character";
     }
 }

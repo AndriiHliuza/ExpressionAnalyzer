@@ -30,7 +30,12 @@ public class UnknownSyntaxUnitSequence extends SyntaxContainer {
                 .collect(Collectors.joining());
         return "UnknownSyntaxUnitSequence{" +
                 "index='" + getIndex() + '\'' +
-                ", value='" + value +
+                ", value='" + value + '\'' +
                 '}';
+    }
+
+    @Override
+    public String name() {
+        return "Unknown characters";
     }
 }

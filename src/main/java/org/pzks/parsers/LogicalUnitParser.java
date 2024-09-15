@@ -1,6 +1,7 @@
 package org.pzks.parsers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LogicalUnitParser {
@@ -26,7 +27,12 @@ public class LogicalUnitParser {
                 isNumberBuilding = true;
             } else {
                 if (!logicalUnitBuilder.isEmpty()) {
-                    logicalUnitsResult.add(logicalUnitBuilder.toString());
+                    String combinedNumber = logicalUnitBuilder.toString();
+                    if (combinedNumber.matches("\\d+\\.")) {
+                        logicalUnitsResult.addAll(Arrays.stream(combinedNumber.split("\\b")).toList());
+                    } else {
+                        logicalUnitsResult.add(combinedNumber);
+                    }
                     logicalUnitBuilder.delete(0, logicalUnitBuilder.length());
                 }
                 logicalUnitsResult.add(logicalUnit);

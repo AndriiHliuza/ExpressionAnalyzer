@@ -17,7 +17,7 @@ public class Space extends SyntaxUnit {
     public String treeUnitRepresentation() {
         return "Space{" +
                 "index='" + getIndex() + '\'' +
-                ", value='" + getValue() +
+                ", value='" + getValue() + '\'' +
                 '}';
     }
 }

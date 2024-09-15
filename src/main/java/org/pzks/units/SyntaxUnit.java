@@ -79,6 +79,10 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
                 '}';
     }
 
+    public String name() {
+        return getClass().getSimpleName();
+    }
+
     @Override
     public SyntaxUnit parse() throws Exception {
         int syntaxUnitIndex = getSyntaxUnitIndex();
@@ -175,7 +179,7 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
                     syntaxUnitCompatibilityAnalyzer = new NumberCompatibilityAnalyzer(previousSyntaxUnit, syntaxUnit);
                     isCompatibleWithPreviousSyntaxUnit = syntaxUnitCompatibilityAnalyzer.isCompatibleWithPreviousSyntaxUnit();
                 } else if (syntaxUnit instanceof Operation) {
-                    syntaxUnitCompatibilityAnalyzer = new OperationCompatibilityAnalyzer(previousSyntaxUnit, syntaxUnit);
+                    syntaxUnitCompatibilityAnalyzer = new OperationCompatibilityAnalyzer(previousSyntaxUnit, syntaxUnit, i, syntaxUnits);
                     isCompatibleWithPreviousSyntaxUnit = syntaxUnitCompatibilityAnalyzer.isCompatibleWithPreviousSyntaxUnit();
                 } else if (syntaxUnit instanceof UnknownSyntaxUnitSequence ||
                         syntaxUnit instanceof UnknownSyntaxUnit) {
@@ -203,7 +207,6 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
     private void processInvalidFirstSyntaxUnitInsideAnotherSyntaxUnit(SyntaxUnit syntaxUnit) {
         int syntaxUnitPosition = syntaxUnit.getIndex();
         String syntaxUnitValue = syntaxUnit.getValue();
-        String syntaxUnitClassName = syntaxUnit.getClass().getSimpleName().toLowerCase();
         syntaxUnitErrors.add(new SyntaxUnitErrorMessageBuilder(
                 syntaxUnitPosition,
                 "Unexpected value: '" + syntaxUnitValue + "'",

@@ -3,7 +3,7 @@ package org.pzks.analyzers.compatibility;
 import org.pzks.units.SyntaxUnit;
 import org.pzks.utils.SyntaxUnitErrorMessageBuilder;
 
-public abstract class PlainSyntaxUnitCompatibilityAnalyzer extends SyntaxContainerCompatibilityAnalyzer {
+public abstract class PlainSyntaxUnitCompatibilityAnalyzer extends SyntaxUnitCompatibilityAnalyzer {
     public PlainSyntaxUnitCompatibilityAnalyzer(SyntaxUnit previous, SyntaxUnit current) {
         super(previous, current);
     }
@@ -11,15 +11,14 @@ public abstract class PlainSyntaxUnitCompatibilityAnalyzer extends SyntaxContain
     public void processNegativeCompatibilityWithPreviousSyntaxUnit() {
         int syntaxUnitPosition = getCurrent().getIndex();
         String syntaxUnitValue = getCurrent().getValue();
-        String syntaxUnitClassName = getCurrent().getClass().getSimpleName();
+        String syntaxUnitName = getCurrent().name();
 
         String previousSyntaxUnitValue = getPrevious().getValue();
-        String previousSyntaxUnitClassName = getPrevious().getClass().getSimpleName();
-
+        String previousSyntaxUnitName = getPrevious().name();
 
         getErrors().add(new SyntaxUnitErrorMessageBuilder(
                 syntaxUnitPosition,
-                "Unexpected " + syntaxUnitClassName.toLowerCase() + " '" + syntaxUnitValue + "'",
-                syntaxUnitClassName + " can not be placed right after the " + previousSyntaxUnitClassName.toLowerCase() + " '" + previousSyntaxUnitValue + "'"));
+                "Unexpected " + syntaxUnitName.toLowerCase() + " '" + syntaxUnitValue + "'",
+                syntaxUnitName + " can not be placed right after the " + previousSyntaxUnitName.toLowerCase() + " '" + previousSyntaxUnitValue + "'"));
     }
 }

@@ -75,7 +75,7 @@ public class LogicalBlock extends SyntaxContainer {
         }
         return "LogicalBlock{" +
                 "index='" + getIndex() + '\'' +
-                ", value='" + value +
+                ", value='" + value + '\'' +
                 '}';
     }
 }

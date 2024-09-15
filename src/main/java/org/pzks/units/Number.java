@@ -17,7 +17,7 @@ public class Number extends SyntaxUnit {
     public String treeUnitRepresentation() {
         return "Number{" +
                 "index='" + getIndex() + '\'' +
-                ", value='" + getValue() +
+                ", value='" + getValue() + '\'' +
                 '}';
     }
 }

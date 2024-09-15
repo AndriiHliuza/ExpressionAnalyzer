@@ -18,7 +18,7 @@ public class Variable extends SyntaxUnit {
     public String treeUnitRepresentation() {
         return "Variable{" +
                 "index='" + getIndex() + '\'' +
-                ", value='" + getValue() +
+                ", value='" + getValue() + '\'' +
                 '}';
     }
 }
