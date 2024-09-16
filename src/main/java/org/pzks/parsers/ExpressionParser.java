@@ -19,6 +19,7 @@ public class ExpressionParser {
         UnknownSyntaxUnitsParser unknownSyntaxUnitsParser = new UnknownSyntaxUnitsParser(parsedSyntaxUnit);
         parsedSyntaxUnit = unknownSyntaxUnitsParser.parse();
 
+        System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);
         if (printTreeOfSyntaxUnits) {
             HeadlinePrinter.print("Expression Tree", Color.CYAN);
             List<SyntaxUnit> syntaxUnits = parsedSyntaxUnit.getSyntaxUnits();
@@ -30,7 +31,7 @@ public class ExpressionParser {
             List<SyntaxUnitErrorMessageBuilder> errors = parsedSyntaxUnit.getSyntaxUnitErrors();
             if (!errors.isEmpty()) {
                 HeadlinePrinter.print("Errors", Color.RED);
-                System.out.println(Color.RED.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value + "\n");
+                System.out.println(Color.RED.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);
             } else {
                 HeadlinePrinter.print("Success", Color.GREEN);
                 System.out.println(Color.GREEN.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);
@@ -45,6 +46,7 @@ public class ExpressionParser {
             System.out.print(Color.GREEN.getAnsiValue() + "Fixed expression: " + Color.DEFAULT.getAnsiValue());
             SyntaxUnitStructurePrinter.printAsString(parsedSyntaxUnit.getSyntaxUnits());
         }
+        System.out.println();
     }
 
     private List<String> getLogicalUnits(String expression) {
