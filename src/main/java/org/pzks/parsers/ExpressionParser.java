@@ -14,7 +14,6 @@ public class ExpressionParser {
 
     public void parse(String value, boolean printTreeOfSyntaxUnits, boolean showErrors, boolean fixSyntaxUnits) throws Exception {
         List<String> logicalUnits = getLogicalUnits(value);
-        System.out.println(logicalUnits);
         SyntaxUnit syntaxUnit = new SyntaxUnit(0, logicalUnits);
         SyntaxUnit parsedSyntaxUnit = syntaxUnit.parse();
         UnknownSyntaxUnitsParser unknownSyntaxUnitsParser = new UnknownSyntaxUnitsParser(parsedSyntaxUnit);
