@@ -15,6 +15,7 @@ class MainTest {
         String testString7 = "(a+";
         String testString8 = "(a+b)b(d-c)";
         String testString9 = "a+()";
-        new ExpressionParser().parse(testString1, true, true, true);
+        String testString10 = "b((";
+        new ExpressionParser().parse(testString10, true, true, true);
     }
 }

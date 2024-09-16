@@ -6,6 +6,7 @@ import org.pzks.units.Variable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FunctionBuilder extends SyntaxUnitBuilder {
 
@@ -29,6 +30,11 @@ public class FunctionBuilder extends SyntaxUnitBuilder {
             functionUnits.add(getCurrentLogicalUnit());
             functionUnits.add(nextLogicalUnit);
             indexInOriginalList = addUnitsToStructure(functionUnits, getCurrentLogicalUnitIndexInLogicalUnits(), 2);
+
+            if (functionUnits.size() == 2 && String.join("", functionUnits).matches("\\w+\\(")) {
+                indexInOriginalList += 2;
+            }
+
             getSyntaxUnits().add(new Function(getSyntaxUnitIndex(), functionUnits));
         } else {
             getSyntaxUnits().add(new Variable(getSyntaxUnitIndex(), getCurrentLogicalUnit()));
