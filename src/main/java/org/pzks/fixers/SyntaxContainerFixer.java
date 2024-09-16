@@ -27,13 +27,13 @@ public class SyntaxContainerFixer extends SyntaxUnitFixer {
 
     private boolean checkIsContainerEmptyAndForRemoval(SyntaxContainer syntaxContainer) {
         boolean isContainerRemoved = false;
-        if (syntaxContainer.getSyntaxUnits().isEmpty()) {
+        if (syntaxContainer.getSyntaxUnits().isEmpty() && syntaxContainer instanceof LogicalBlock) {
             getSyntaxUnits().remove(getCurrentSyntaxUnit());
             setSyntaxUnitRemoverFromSyntaxUnits(true);
             isContainerRemoved = true;
         } else {
             new ExpressionFixer(syntaxContainer.getSyntaxUnits()).fix();
-            if (syntaxContainer.getSyntaxUnits().isEmpty()) {
+            if (syntaxContainer.getSyntaxUnits().isEmpty() && syntaxContainer instanceof LogicalBlock) {
                 getSyntaxUnits().remove(getCurrentSyntaxUnit());
                 setSyntaxUnitRemoverFromSyntaxUnits(true);
                 isContainerRemoved = true;

@@ -56,21 +56,25 @@ public class SyntaxContainerCompatibilityAnalyzer extends SyntaxUnitCompatibilit
         if (!getCurrent().getSyntaxUnits().isEmpty()) {
             if (getCurrent().getSyntaxUnits().size() == 1 &&
                     getCurrent().getSyntaxUnits().getFirst() instanceof Space) {
-                getErrors().add(new SyntaxUnitErrorMessageBuilder(
-                        syntaxUnitPosition,
-                        syntaxUnitName + " '" + syntaxUnitValue + "' is empty",
-                        syntaxUnitName + " must have at least 1 value"
-                ));
+                if (getCurrent() instanceof LogicalBlock) {
+                    getErrors().add(new SyntaxUnitErrorMessageBuilder(
+                            syntaxUnitPosition,
+                            syntaxUnitName + " '" + syntaxUnitValue + "' is empty",
+                            syntaxUnitName + " must have at least 1 value"
+                    ));
+                }
             } else {
                 getCurrent().analyze();
                 getErrors().addAll(getCurrent().getSyntaxUnitErrors());
             }
         } else {
-            getErrors().add(new SyntaxUnitErrorMessageBuilder(
-                    syntaxUnitPosition,
-                    syntaxUnitName + " '" + syntaxUnitValue + "' is empty",
-                    syntaxUnitName + " must have at least 1 value"
-            ));
+            if (getCurrent() instanceof LogicalBlock) {
+                getErrors().add(new SyntaxUnitErrorMessageBuilder(
+                        syntaxUnitPosition,
+                        syntaxUnitName + " '" + syntaxUnitValue + "' is empty",
+                        syntaxUnitName + " must have at least 1 value"
+                ));
+            }
         }
     }
 
