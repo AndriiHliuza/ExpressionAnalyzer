@@ -13,7 +13,8 @@ public abstract class VarNumCompatibilityAnalyzer extends PlainSyntaxUnitCompati
 
         if (getPrevious() instanceof Operation ||
                 getPrevious() instanceof UnknownSyntaxUnitSequence ||
-                getPrevious() instanceof UnknownSyntaxUnit) {
+                getPrevious() instanceof UnknownSyntaxUnit ||
+                getPrevious() instanceof Space) {
             isCompatible = true;
         } else {
             processNegativeCompatibilityWithPreviousSyntaxUnit();

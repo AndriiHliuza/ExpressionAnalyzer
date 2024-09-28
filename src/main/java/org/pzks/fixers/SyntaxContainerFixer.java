@@ -15,13 +15,15 @@ public class SyntaxContainerFixer extends SyntaxUnitFixer {
     public void fix() {
         if (getCurrentSyntaxUnit() == null) {
             getSyntaxUnits().remove(getCurrentSyntaxUnit());
-            setSyntaxUnitRemoverFromSyntaxUnits(true);
+            setSyntaxUnitRemovedFromSyntaxUnits(true);
             return;
         }
 
         SyntaxContainer syntaxContainer = (SyntaxContainer) getCurrentSyntaxUnit();
         boolean isContainerRemoved = checkIsContainerEmptyAndForRemoval(syntaxContainer);
-        syntaxContainer.getDetails().putIfAbsent("closingBracket", ")");
+        if (!(syntaxContainer instanceof FunctionParam)) {
+            syntaxContainer.getDetails().putIfAbsent("closingBracket", ")");
+        }
         processCompatibilityWithPreviousSyntaxUnit(isContainerRemoved);
     }
 
@@ -29,13 +31,27 @@ public class SyntaxContainerFixer extends SyntaxUnitFixer {
         boolean isContainerRemoved = false;
         if (syntaxContainer.getSyntaxUnits().isEmpty() && syntaxContainer instanceof LogicalBlock) {
             getSyntaxUnits().remove(getCurrentSyntaxUnit());
-            setSyntaxUnitRemoverFromSyntaxUnits(true);
+            setSyntaxUnitRemovedFromSyntaxUnits(true);
             isContainerRemoved = true;
+        } else if (syntaxContainer instanceof FunctionParam functionParam) {
+            if (functionParam.getSyntaxUnits().isEmpty() ||
+                    (functionParam.getSyntaxUnits().size() == 1 && functionParam.getSyntaxUnits().getFirst() instanceof Space)) {
+                getSyntaxUnits().remove(getCurrentSyntaxUnit());
+                setSyntaxUnitRemovedFromSyntaxUnits(true);
+                isContainerRemoved = true;
+            } else {
+                new ExpressionFixer(functionParam.getSyntaxUnits()).fix();
+                if (functionParam.getSyntaxUnits().isEmpty()) {
+                    getSyntaxUnits().remove(getCurrentSyntaxUnit());
+                    setSyntaxUnitRemovedFromSyntaxUnits(true);
+                    isContainerRemoved = true;
+                }
+            }
         } else {
             new ExpressionFixer(syntaxContainer.getSyntaxUnits()).fix();
             if (syntaxContainer.getSyntaxUnits().isEmpty() && syntaxContainer instanceof LogicalBlock) {
                 getSyntaxUnits().remove(getCurrentSyntaxUnit());
-                setSyntaxUnitRemoverFromSyntaxUnits(true);
+                setSyntaxUnitRemovedFromSyntaxUnits(true);
                 isContainerRemoved = true;
             }
         }
@@ -64,11 +80,13 @@ public class SyntaxContainerFixer extends SyntaxUnitFixer {
                 if (getPreviousSyntaxUnit() instanceof Number ||
                         getPreviousSyntaxUnit() instanceof Variable ||
                         getPreviousSyntaxUnit() instanceof SyntaxContainer) {
-                    getSyntaxUnits().add(
-                            getCurrentUnitPositionInSyntaxUnitsList(),
-                            new Operation(0, RandomValuesGenerator.generateOperation())
-                    );
-                    setNewSyntaxUnitAddedBetweenTheCurrentAndThePreviousSyntaxUnit(true);
+                    if (!(getPreviousSyntaxUnit() instanceof FunctionParam)) {
+                        getSyntaxUnits().add(
+                                getCurrentUnitPositionInSyntaxUnitsList(),
+                                new Operation(0, RandomValuesGenerator.generateOperation())
+                        );
+                        setNewSyntaxUnitAddedBetweenTheCurrentAndThePreviousSyntaxUnit(true);
+                    }
                 }
             }
         }

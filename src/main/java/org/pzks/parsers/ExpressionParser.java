@@ -29,9 +29,13 @@ public class ExpressionParser {
         if (showErrors) {
             parsedSyntaxUnit.analyze();
             List<SyntaxUnitErrorMessageBuilder> errors = parsedSyntaxUnit.getSyntaxUnitErrors();
+
             if (!errors.isEmpty()) {
+                List<Integer> errorsPositions = errors.stream()
+                        .map(SyntaxUnitErrorMessageBuilder::getErrorPosition)
+                        .toList();
                 HeadlinePrinter.print("Errors", Color.RED);
-                System.out.println(Color.RED.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);
+                SyntaxUnitStructurePrinter.printExpressionWithErrorsPointing(value, errorsPositions);
             } else {
                 HeadlinePrinter.print("Success", Color.GREEN);
                 System.out.println(Color.GREEN.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);

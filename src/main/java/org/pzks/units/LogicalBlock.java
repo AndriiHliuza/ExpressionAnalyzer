@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 public class LogicalBlock extends SyntaxContainer {
 
     public LogicalBlock(int index, List<String> units) throws Exception {
-        super(index, units);
+        super(index, units, true);
     }
 
     @Override

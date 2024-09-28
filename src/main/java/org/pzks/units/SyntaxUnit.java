@@ -34,6 +34,10 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
         return index;
     }
 
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
     public List<String> getLogicalUnits() {
         return logicalUnits;
     }
@@ -119,9 +123,10 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
         return this;
     }
 
-    private int getSyntaxUnitIndex() {
+    public int getSyntaxUnitIndex() {
         int currentSyntaxUnitIndex = getIndex();
-        if (this instanceof SyntaxContainer syntaxContainer) {
+        if (this instanceof Function || this instanceof LogicalBlock) {
+            SyntaxContainer syntaxContainer = (SyntaxContainer) this;
             Map<String, String> syntaxContainerDetails = syntaxContainer.getDetails();
             String name = "";
             String openingBracket = syntaxContainerDetails.get("openingBracket");
@@ -155,22 +160,13 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
             boolean isCompatibleWithPreviousSyntaxUnit = false;
 
             SyntaxUnit syntaxUnit = syntaxUnits.get(i);
-            SyntaxUnit previousSyntaxUnit = null;
-
             if ((syntaxUnit instanceof Operation ||
                     syntaxUnit instanceof UnknownSyntaxUnitSequence ||
                     syntaxUnit instanceof UnknownSyntaxUnit) && i == 0) {
                 processInvalidFirstSyntaxUnitInsideAnotherSyntaxUnit(syntaxUnit);
             } else {
                 SyntaxUnitCompatibilityAnalyzer syntaxUnitCompatibilityAnalyzer = null;
-
-                if (i > 0) {
-                    previousSyntaxUnit = syntaxUnits.get(i - 1);
-                }
-
-                if (previousSyntaxUnit instanceof Space && i > 1) {
-                    previousSyntaxUnit = syntaxUnits.get(i - 2);
-                }
+                SyntaxUnit previousSyntaxUnit = getPreviousSyntaxUnit(i, syntaxUnit);
 
                 if (syntaxUnit instanceof Variable) {
                     syntaxUnitCompatibilityAnalyzer = new VariableCompatibilityAnalyzer(previousSyntaxUnit, syntaxUnit);
@@ -180,6 +176,9 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
                     isCompatibleWithPreviousSyntaxUnit = syntaxUnitCompatibilityAnalyzer.isCompatibleWithPreviousSyntaxUnit();
                 } else if (syntaxUnit instanceof Operation) {
                     syntaxUnitCompatibilityAnalyzer = new OperationCompatibilityAnalyzer(previousSyntaxUnit, syntaxUnit, i, syntaxUnits);
+                    isCompatibleWithPreviousSyntaxUnit = syntaxUnitCompatibilityAnalyzer.isCompatibleWithPreviousSyntaxUnit();
+                } else if (syntaxUnit instanceof FunctionParam) {
+                    syntaxUnitCompatibilityAnalyzer = new FunctionParamCompatibilityAnalyzer(previousSyntaxUnit, syntaxUnit);
                     isCompatibleWithPreviousSyntaxUnit = syntaxUnitCompatibilityAnalyzer.isCompatibleWithPreviousSyntaxUnit();
                 } else if (syntaxUnit instanceof UnknownSyntaxUnitSequence ||
                         syntaxUnit instanceof UnknownSyntaxUnit) {
@@ -204,13 +203,32 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
         }
     }
 
+    private SyntaxUnit getPreviousSyntaxUnit(int currentSyntaxUnitPositionInList, SyntaxUnit currentSyntaxUnit) {
+        SyntaxUnit previousSyntaxUnit = null;
+        if (currentSyntaxUnitPositionInList > 0) {
+            previousSyntaxUnit = syntaxUnits.get(currentSyntaxUnitPositionInList - 1);
+        }
+
+        if (previousSyntaxUnit instanceof Space) {
+            if (currentSyntaxUnitPositionInList > 1) {
+                previousSyntaxUnit = syntaxUnits.get(currentSyntaxUnitPositionInList - 2);
+            } else if (currentSyntaxUnit instanceof Operation ||
+                    currentSyntaxUnit instanceof UnknownSyntaxUnitSequence ||
+                    currentSyntaxUnit instanceof UnknownSyntaxUnit) {
+                processInvalidFirstSyntaxUnitInsideAnotherSyntaxUnit(currentSyntaxUnit);
+            }
+        }
+        return previousSyntaxUnit;
+    }
+
+
     private void processInvalidFirstSyntaxUnitInsideAnotherSyntaxUnit(SyntaxUnit syntaxUnit) {
         int syntaxUnitPosition = syntaxUnit.getIndex();
         String syntaxUnitValue = syntaxUnit.getValue();
         syntaxUnitErrors.add(new SyntaxUnitErrorMessageBuilder(
                 syntaxUnitPosition,
                 "Unexpected value: '" + syntaxUnitValue + "'",
-                "The provided character can not be placed at the beginning of the expression, function or logical block"
+                "The provided character can not be placed at the beginning of the expression or block"
         ));
     }
 

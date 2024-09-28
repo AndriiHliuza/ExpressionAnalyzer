@@ -10,7 +10,7 @@ public abstract class SyntaxUnitFixer {
     private SyntaxUnit previousSyntaxUnit;
     private final List<SyntaxUnit> syntaxUnits;
     private boolean isNewSyntaxUnitAddedBetweenTheCurrentAndThePreviousSyntaxUnit;
-    private boolean isSyntaxUnitRemoverFromSyntaxUnits;
+    private boolean isSyntaxUnitRemovedFromSyntaxUnits;
 
     public SyntaxUnitFixer(int currentUnitPositionInSyntaxUnitsList, List<SyntaxUnit> syntaxUnits) {
         this.currentUnitPositionInSyntaxUnitsList = currentUnitPositionInSyntaxUnitsList;
@@ -47,12 +47,12 @@ public abstract class SyntaxUnitFixer {
         isNewSyntaxUnitAddedBetweenTheCurrentAndThePreviousSyntaxUnit = newSyntaxUnitAddedBetweenTheCurrentAndThePreviousSyntaxUnit;
     }
 
-    public boolean isSyntaxUnitRemoverFromSyntaxUnits() {
-        return isSyntaxUnitRemoverFromSyntaxUnits;
+    public boolean isSyntaxUnitRemovedFromSyntaxUnits() {
+        return isSyntaxUnitRemovedFromSyntaxUnits;
     }
 
-    public void setSyntaxUnitRemoverFromSyntaxUnits(boolean syntaxUnitRemoverFromSyntaxUnits) {
-        isSyntaxUnitRemoverFromSyntaxUnits = syntaxUnitRemoverFromSyntaxUnits;
+    public void setSyntaxUnitRemovedFromSyntaxUnits(boolean syntaxUnitRemoverFromSyntaxUnits) {
+        isSyntaxUnitRemovedFromSyntaxUnits = syntaxUnitRemoverFromSyntaxUnits;
     }
 
     public abstract void fix();

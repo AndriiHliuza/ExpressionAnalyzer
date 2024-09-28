@@ -17,6 +17,7 @@ public class SyntaxContainerCompatibilityAnalyzer extends SyntaxUnitCompatibilit
         } else if (getPrevious() instanceof Operation ||
                 getPrevious() instanceof UnknownSyntaxUnitSequence ||
                 getPrevious() instanceof UnknownSyntaxUnit ||
+                getPrevious() instanceof Space ||
                 getPrevious() == null) {
             processBodyStatusInSyntaxContainer();
         } else {
@@ -48,33 +49,48 @@ public class SyntaxContainerCompatibilityAnalyzer extends SyntaxUnitCompatibilit
         processBodyStatusInSyntaxContainer();
     }
 
-    private void processBodyStatusInSyntaxContainer() {
+    public void processBodyStatusInSyntaxContainer() {
         int syntaxUnitPosition = getCurrent().getIndex();
         String syntaxUnitValue = getCurrent().getValue();
         String syntaxUnitName = getCurrent().name();
-
         if (!getCurrent().getSyntaxUnits().isEmpty()) {
-            if (getCurrent().getSyntaxUnits().size() == 1 &&
-                    getCurrent().getSyntaxUnits().getFirst() instanceof Space) {
-                if (getCurrent() instanceof LogicalBlock) {
-                    getErrors().add(new SyntaxUnitErrorMessageBuilder(
-                            syntaxUnitPosition,
-                            syntaxUnitName + " '" + syntaxUnitValue + "' is empty",
-                            syntaxUnitName + " must have at least 1 value"
-                    ));
+            if (getCurrent().getSyntaxUnits().size() == 1) {
+                SyntaxUnit syntaxUnitInsideSyntaxContainer = getCurrent().getSyntaxUnits().getFirst();
+
+                if (syntaxUnitInsideSyntaxContainer instanceof Space) {
+                    processEmptyBodyErrorsForSyntaxContainer(syntaxUnitPosition, syntaxUnitName, syntaxUnitValue);
+                } else if (syntaxUnitInsideSyntaxContainer instanceof FunctionParam functionParam) {
+                    if ((functionParam.getSyntaxUnits().size() == 1
+                            && !(functionParam.getSyntaxUnits().getFirst() instanceof Space)) ||
+                            functionParam.getSyntaxUnits().size() > 1) {
+                        getCurrent().analyze();
+                        getErrors().addAll(getCurrent().getSyntaxUnitErrors());
+                    }
+                } else {
+                    getCurrent().analyze();
+                    getErrors().addAll(getCurrent().getSyntaxUnitErrors());
                 }
             } else {
                 getCurrent().analyze();
                 getErrors().addAll(getCurrent().getSyntaxUnitErrors());
             }
         } else {
-            if (getCurrent() instanceof LogicalBlock) {
-                getErrors().add(new SyntaxUnitErrorMessageBuilder(
-                        syntaxUnitPosition,
-                        syntaxUnitName + " '" + syntaxUnitValue + "' is empty",
-                        syntaxUnitName + " must have at least 1 value"
-                ));
-            }
+            processEmptyBodyErrorsForSyntaxContainer(syntaxUnitPosition, syntaxUnitName, syntaxUnitValue);
+        }
+    }
+
+    private void processEmptyBodyErrorsForSyntaxContainer(int syntaxUnitPosition, String syntaxUnitName, String syntaxUnitValue) {
+        if (getCurrent() instanceof LogicalBlock) {
+            getErrors().add(new SyntaxUnitErrorMessageBuilder(
+                    syntaxUnitPosition,
+                    syntaxUnitName + " '" + syntaxUnitValue + "' is empty",
+                    syntaxUnitName + " must have at least 1 value"
+            ));
+        } else if (getCurrent() instanceof FunctionParam) {
+            getErrors().add(new SyntaxUnitErrorMessageBuilder(
+                    syntaxUnitPosition,
+                    "Function parameter is missing"
+            ));
         }
     }
 
@@ -97,7 +113,7 @@ public class SyntaxContainerCompatibilityAnalyzer extends SyntaxUnitCompatibilit
 
             getErrors().add(new SyntaxUnitErrorMessageBuilder(
                     syntaxContainerClosingBracketPosition,
-                    "Missing closing bracket for " + syntaxUnitName.toLowerCase() + " '" + syntaxUnitValue + "' \n"));
+                    "Missing closing bracket for " + syntaxUnitName.toLowerCase() + " '" + syntaxUnitValue));
         }
     }
 }

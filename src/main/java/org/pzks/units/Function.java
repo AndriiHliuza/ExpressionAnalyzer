@@ -1,13 +1,46 @@
 package org.pzks.units;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Function extends SyntaxContainer {
 
     public Function(int index, List<String> units) throws Exception {
-        super(index, units);
+        super(index, units, true);
+    }
+
+    @Override
+    public SyntaxUnit parse() throws Exception {
+        List<List<String>> functionParams = new ArrayList<>();
+        List<String> functionParameterValues = new ArrayList<>();
+        for (int i = 0; i < getBodyUnits().size(); i++) {
+            String functionLogicalUnit = getBodyUnits().get(i);
+            if (functionLogicalUnit.equals(",")) {
+                functionParams.add(new ArrayList<>(functionParameterValues));
+                functionParameterValues.clear();
+                if (i == getBodyUnits().size() - 1) {
+                    functionParams.add(new ArrayList<>());
+                }
+            } else if (i == getBodyUnits().size() - 1) {
+                functionParameterValues.add(functionLogicalUnit);
+                functionParams.add(new ArrayList<>(functionParameterValues));
+                functionParameterValues.clear();
+            } else {
+                functionParameterValues.add(functionLogicalUnit);
+            }
+        }
+
+        for (int i = 0; i < functionParams.size(); i++) {
+            int offset = functionParams.subList(0, i).stream()
+                    .flatMap(List::stream)
+                    .mapToInt(String::length)
+                    .sum();
+
+            getSyntaxUnits().add(new FunctionParam(getSyntaxUnitIndex() + offset + i, functionParams.get(i)));
+        }
+
+        return this;
     }
 
     @Override
@@ -22,16 +55,16 @@ public class Function extends SyntaxContainer {
         int numberOfOpeningParenthesis = Collections.frequency(logicalUnits, "(");
         int numberOfClosingParenthesis = Collections.frequency(logicalUnits, ")");
 
-        if (joinedFunctionUnits.matches("^\\w+\\(.*\\)$")) {
+        if (joinedFunctionUnits.matches("^\\w+\\s*\\(.*\\)$")) {
             functionName = logicalUnits.getFirst();
             openingBracket = logicalUnits.get(1);
             closingBracket = logicalUnits.getLast();
-        } else if (joinedFunctionUnits.matches("^\\w+\\(.*")) {
+        } else if (joinedFunctionUnits.matches("^\\w+\\s*\\(.*")) {
             functionName = logicalUnits.getFirst();
             openingBracket = logicalUnits.get(1);
         }
 
-        getDetails().put("name", functionName.matches("\\w+") ? functionName : null);
+        getDetails().put("name", functionName.matches("\\w+\\s*") ? functionName : null);
         getDetails().put("openingBracket", openingBracket.matches("\\(") ? openingBracket : null);
 
         if (numberOfOpeningParenthesis == numberOfClosingParenthesis && closingBracket.matches("\\)")) {
@@ -69,10 +102,7 @@ public class Function extends SyntaxContainer {
         String name = getDetails().get("name");
         String openingBracket = getDetails().get("openingBracket");
         String closingBracket = getDetails().get("closingBracket");
-        String body = getSyntaxUnits().stream()
-                .map(SyntaxUnit::getValue)
-                .collect(Collectors.joining());
-
+        String body = String.join("", getBodyUnits());
         String value = name + openingBracket + body;
 
         if (closingBracket != null) {

@@ -53,7 +53,7 @@ public class ExpressionFixer {
 
             if (syntaxUnitFixer != null && syntaxUnitFixer.isNewSyntaxUnitAddedBetweenTheCurrentAndThePreviousSyntaxUnit()) {
                 i++;
-            } else if (syntaxUnitFixer != null && syntaxUnitFixer.isSyntaxUnitRemoverFromSyntaxUnits()) {
+            } else if (syntaxUnitFixer != null && syntaxUnitFixer.isSyntaxUnitRemovedFromSyntaxUnits()) {
                 i--;
             }
         }

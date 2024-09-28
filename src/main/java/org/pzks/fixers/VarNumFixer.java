@@ -16,7 +16,7 @@ public class VarNumFixer extends SyntaxUnitFixer {
     public void fix() {
         if (getCurrentSyntaxUnit() == null) {
             getSyntaxUnits().remove(getCurrentSyntaxUnit());
-            setSyntaxUnitRemoverFromSyntaxUnits(true);
+            setSyntaxUnitRemovedFromSyntaxUnits(true);
             return;
         }
 

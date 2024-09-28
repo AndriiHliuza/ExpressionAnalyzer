@@ -14,7 +14,7 @@ public class OperationFixer extends SyntaxUnitFixer {
     public void fix() {
         if (getCurrentSyntaxUnit() == null) {
             getSyntaxUnits().remove(getCurrentSyntaxUnit());
-            setSyntaxUnitRemoverFromSyntaxUnits(true);
+            setSyntaxUnitRemovedFromSyntaxUnits(true);
             return;
         }
 
@@ -34,7 +34,7 @@ public class OperationFixer extends SyntaxUnitFixer {
 
         if (getPreviousSyntaxUnit() != null && getPreviousSyntaxUnit() instanceof Operation) {
             getSyntaxUnits().remove(getCurrentSyntaxUnit());
-            setSyntaxUnitRemoverFromSyntaxUnits(true);
+            setSyntaxUnitRemovedFromSyntaxUnits(true);
         }
     }
 }

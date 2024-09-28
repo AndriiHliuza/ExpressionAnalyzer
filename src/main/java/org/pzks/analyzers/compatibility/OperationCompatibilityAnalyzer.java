@@ -32,7 +32,8 @@ public class OperationCompatibilityAnalyzer extends PlainSyntaxUnitCompatibility
                 getPrevious() instanceof Function ||
                 getPrevious() instanceof LogicalBlock ||
                 getPrevious() instanceof UnknownSyntaxUnitSequence ||
-                getPrevious() instanceof UnknownSyntaxUnit) {
+                getPrevious() instanceof UnknownSyntaxUnit ||
+                getPrevious() instanceof Space) {
             isCompatible = true;
         } else {
             processNegativeCompatibilityWithPreviousSyntaxUnit();
@@ -53,14 +54,14 @@ public class OperationCompatibilityAnalyzer extends PlainSyntaxUnitCompatibility
             getErrors().add(new SyntaxUnitErrorMessageBuilder(
                     syntaxUnitPosition,
                     "Unexpected " + syntaxUnitName.toLowerCase() + " '" + syntaxUnitValue + "'",
-                    syntaxUnitName + " can not be the last value in the expression, fuction or logical block"));
+                    syntaxUnitName + " can not be the last value in the expression or block"));
             isCompatible = false;
         } else if (syntaxUnits.get(nextSyntaxUnitPosition) instanceof Space &&
                 nextSyntaxUnitPosition == syntaxUnits.size() - 1) {
             getErrors().add(new SyntaxUnitErrorMessageBuilder(
                     syntaxUnitPosition,
                     "Unexpected " + syntaxUnitName.toLowerCase() + " '" + syntaxUnitValue + "'",
-                    syntaxUnitName + " can not be the last value in the expression, fuction or logical block"));
+                    syntaxUnitName + " can not be the last value in the expression or block"));
             isCompatible = false;
         }
         return isCompatible;

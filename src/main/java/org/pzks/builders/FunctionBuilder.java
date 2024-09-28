@@ -6,7 +6,6 @@ import org.pzks.units.Variable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class FunctionBuilder extends SyntaxUnitBuilder {
 
@@ -23,15 +22,25 @@ public class FunctionBuilder extends SyntaxUnitBuilder {
     @Override
     public int build() throws Exception {
         String nextLogicalUnit;
-        nextLogicalUnit = getLogicalUnits().get(getCurrentLogicalUnitIndexInLogicalUnits() + 1);
+        int i = 1;
+        nextLogicalUnit = getLogicalUnits().get(getCurrentLogicalUnitIndexInLogicalUnits() + i);
+        int nextUnitIndexIfNextUnitMatchesSpace = getCurrentLogicalUnitIndexInLogicalUnits() + i + 1;
+        if (nextLogicalUnit.matches("\\s+") && nextUnitIndexIfNextUnitMatchesSpace != getLogicalUnits().size()) {
+            i++;
+            nextLogicalUnit = getLogicalUnits().get(getCurrentLogicalUnitIndexInLogicalUnits() + i);
+        }
+
         int indexInOriginalList = getCurrentLogicalUnitIndexInLogicalUnits();
         if (nextLogicalUnit.matches("\\(")) {
             List<String> functionUnits = new ArrayList<>();
-            functionUnits.add(getCurrentLogicalUnit());
+            functionUnits.add(getCurrentLogicalUnit() + String.join("", getLogicalUnits().subList(
+                    getCurrentLogicalUnitIndexInLogicalUnits() + 1,
+                    getCurrentLogicalUnitIndexInLogicalUnits() + i
+            )));
             functionUnits.add(nextLogicalUnit);
-            indexInOriginalList = addUnitsToStructure(functionUnits, getCurrentLogicalUnitIndexInLogicalUnits(), 2);
+            indexInOriginalList = addUnitsToStructure(functionUnits, getCurrentLogicalUnitIndexInLogicalUnits(), i + 1);
 
-            if (functionUnits.size() == 2 && String.join("", functionUnits).matches("\\w+\\(")) {
+            if (functionUnits.size() == 2 && String.join("", functionUnits).matches("\\w+\\s*\\(")) {
                 indexInOriginalList += 2;
             }
 
