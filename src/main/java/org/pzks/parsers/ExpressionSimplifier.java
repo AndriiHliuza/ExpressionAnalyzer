@@ -17,7 +17,12 @@ public class ExpressionSimplifier {
         removeUnnecessaryBracketsInLogicalBlocks(syntaxUnits);
         combineAdjacentNumbers(syntaxUnits, List.of("*", "/"));
         combineAdjacentNumbers(syntaxUnits, List.of("*", "/", "+", "-"));
+    }
 
+    public void simplifyByProcessingMultiplicationByZero() {
+        processMultiplicationByZero(syntaxUnits);
+        combineAdjacentNumbers(syntaxUnits, List.of("*", "/"));
+        combineAdjacentNumbers(syntaxUnits, List.of("*", "/", "+", "-"));
     }
 
     private void removeUnnecessaryBracketsInLogicalBlocks(List<SyntaxUnit> syntaxUnits) {
@@ -97,6 +102,19 @@ public class ExpressionSimplifier {
                     }
                 }
             }
+        } else if (currentPosition != 0 && currentNumber == 0) {
+            SyntaxUnit operationSyntaxUnit = syntaxUnits.get(currentPosition - 1);
+            if (operationSyntaxUnit instanceof Operation && operationSyntaxUnit.getValue().matches("[+-]")) {
+                SyntaxUnit nextOperationSyntaxUnit = null;
+
+                if (currentPosition + 1 < syntaxUnits.size()) {
+                    nextOperationSyntaxUnit = syntaxUnits.get(currentPosition + 1);
+                }
+
+                if (nextOperationSyntaxUnit == null || !nextOperationSyntaxUnit.getValue().matches("[*/]")) {
+                    syntaxUnits.subList(currentPosition - 1, currentPosition + 1).clear();
+                }
+            }
         }
 
         return currentPosition;
@@ -121,5 +139,23 @@ public class ExpressionSimplifier {
             case "/" -> previousNumber / currentNumber;
             default -> throw new IllegalStateException("Unexpected value: " + operation);
         };
+    }
+
+    private void processMultiplicationByZero(List<SyntaxUnit> syntaxUnits) {
+        for (int i = 0; i < syntaxUnits.size(); i++) {
+            SyntaxUnit syntaxUnit = syntaxUnits.get(i);
+            if (syntaxUnit instanceof Number) {
+                double currentNumber = Double.parseDouble(syntaxUnit.getValue());
+                if (i + 2 < syntaxUnits.size()) {
+                    SyntaxUnit nextOperationSyntaxUnit = syntaxUnits.get(i + 1);
+                    if (currentNumber == 0 && nextOperationSyntaxUnit.getValue().matches("[*/]")) {
+                        syntaxUnits.subList(i + 1, i + 3).clear();
+                        i--;
+                    }
+                }
+            } else if (syntaxUnit instanceof SyntaxContainer syntaxContainer) {
+                processMultiplicationByZero(syntaxContainer.getSyntaxUnits());
+            }
+        }
     }
 }
