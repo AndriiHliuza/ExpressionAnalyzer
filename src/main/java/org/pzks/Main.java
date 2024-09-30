@@ -13,7 +13,9 @@ public class Main {
                     programArgsProcessor.getExpression(),
                     programArgsProcessor.shouldBuildTree(),
                     programArgsProcessor.shouldCheckForErrors(),
-                    programArgsProcessor.shouldMakeFixes()
+                    programArgsProcessor.shouldMakeFixes(),
+                    programArgsProcessor.shouldBuildFixedAndSimplifiedExpressionTree(),
+                    programArgsProcessor.shouldBuildParallelCalculationTree()
             );
         }
     }

@@ -1,8 +1,10 @@
 package org.pzks.units;
 
+import org.pzks.analyzers.ArithmeticErrorAnalyzer;
 import org.pzks.analyzers.compatibility.*;
+import org.pzks.analyzers.detectors.DivisionByZeroDetector;
 import org.pzks.utils.BasicExpressionUnitRecognizer;
-import org.pzks.analyzers.SyntaxAnalyzer;
+import org.pzks.analyzers.SyntaxErrorsAnalyzer;
 import org.pzks.builders.SyntaxUnitBuilderFactory;
 import org.pzks.parsers.SyntaxUnitParser;
 import org.pzks.utils.SyntaxUnitErrorMessageBuilder;
@@ -11,12 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
+public class SyntaxUnit implements SyntaxUnitParser, SyntaxErrorsAnalyzer, ArithmeticErrorAnalyzer {
     private int index;
     private List<String> logicalUnits;
     private String value;
     private List<SyntaxUnit> syntaxUnits = new ArrayList<>();
     private final List<SyntaxUnitErrorMessageBuilder> syntaxUnitErrors = new ArrayList<>();
+    private final List<SyntaxUnitErrorMessageBuilder> arithmeticErrors = new ArrayList<>();
     private final BasicExpressionUnitRecognizer basicExpressionUnitRecognizer = new BasicExpressionUnitRecognizer();
     private final SyntaxUnitBuilderFactory syntaxUnitBuilderFactory = new SyntaxUnitBuilderFactory();
 
@@ -66,6 +69,10 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
         return syntaxUnitErrors;
     }
 
+    public List<SyntaxUnitErrorMessageBuilder> getArithmeticErrors() {
+        return arithmeticErrors;
+    }
+
     @Override
     public String toString() {
         return "SyntaxUnit{" +
@@ -104,7 +111,17 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
             } else if (basicExpressionUnitRecognizer.isValidAlphaNumericNaming(logicalUnit)) {
                 syntaxUnits.add(new Variable(syntaxUnitIndex, logicalUnit));
             } else if (basicExpressionUnitRecognizer.isOperation(logicalUnit)) {
-                syntaxUnits.add(new Operation(syntaxUnitIndex, logicalUnit));
+                if (logicalUnit.equals("-") && i == 0 && logicalUnits.size() - 1 > i) {
+                    String nextLogicalUnit = logicalUnits.get(i + 1);
+                    if (basicExpressionUnitRecognizer.isFloatNumber(nextLogicalUnit)) {
+                        syntaxUnits.add(new Number(syntaxUnitIndex, logicalUnit + nextLogicalUnit));
+                        i++;
+                    } else {
+                        syntaxUnits.add(new Operation(syntaxUnitIndex, logicalUnit));
+                    }
+                } else {
+                    syntaxUnits.add(new Operation(syntaxUnitIndex, logicalUnit));
+                }
             } else if (basicExpressionUnitRecognizer.isFloatNumber(logicalUnit)) {
                 syntaxUnits.add(new Number(syntaxUnitIndex, logicalUnit));
             } else if (logicalUnit.matches("\\(")) {
@@ -155,7 +172,7 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
     }
 
     @Override
-    public void analyze() {
+    public void analyzeSyntaxErrors() {
         for (int i = 0; i < syntaxUnits.size(); i++) {
             boolean isCompatibleWithPreviousSyntaxUnit = false;
 
@@ -201,6 +218,12 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxAnalyzer {
                 }
             }
         }
+    }
+
+    @Override
+    public void analyzeArithmeticErrors() {
+        DivisionByZeroDetector divisionByZeroDetector = new DivisionByZeroDetector(syntaxUnits);
+        arithmeticErrors.addAll(divisionByZeroDetector.getErrors());
     }
 
     private SyntaxUnit getPreviousSyntaxUnit(int currentSyntaxUnitPositionInList, SyntaxUnit currentSyntaxUnit) {

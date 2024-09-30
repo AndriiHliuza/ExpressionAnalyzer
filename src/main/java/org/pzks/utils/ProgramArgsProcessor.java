@@ -45,6 +45,14 @@ public class ProgramArgsProcessor {
         return programKeys.contains(ProgramKey.FIX.getValue());
     }
 
+    public boolean shouldBuildFixedAndSimplifiedExpressionTree() {
+        return programKeys.contains(ProgramKey.FIXED_TREE.getValue());
+    }
+
+    public boolean shouldBuildParallelCalculationTree() {
+        return programKeys.contains(ProgramKey.PARALLEL_CALCULATION_TREE.getValue());
+    }
+
     public String getExpression() {
         return programKeys.getLast();
     }

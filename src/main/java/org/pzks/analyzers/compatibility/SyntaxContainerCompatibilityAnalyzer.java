@@ -63,15 +63,15 @@ public class SyntaxContainerCompatibilityAnalyzer extends SyntaxUnitCompatibilit
                     if ((functionParam.getSyntaxUnits().size() == 1
                             && !(functionParam.getSyntaxUnits().getFirst() instanceof Space)) ||
                             functionParam.getSyntaxUnits().size() > 1) {
-                        getCurrent().analyze();
+                        getCurrent().analyzeSyntaxErrors();
                         getErrors().addAll(getCurrent().getSyntaxUnitErrors());
                     }
                 } else {
-                    getCurrent().analyze();
+                    getCurrent().analyzeSyntaxErrors();
                     getErrors().addAll(getCurrent().getSyntaxUnitErrors());
                 }
             } else {
-                getCurrent().analyze();
+                getCurrent().analyzeSyntaxErrors();
                 getErrors().addAll(getCurrent().getSyntaxUnitErrors());
             }
         } else {

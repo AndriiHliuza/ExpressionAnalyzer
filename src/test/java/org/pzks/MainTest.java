@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MainTest {
     public static void main(String[] args) throws Exception {
-        String testString1 = "+!,11  .   442)(a23-+(tix2u39u9nyu08%, 93ux h3028i9i8  988.23.31 9 $!()p  (a,   ,)#    (*U@!)! #!@ @ #@*5. 81.8  .   4.2  34 -     )6)b(b  (/a/2325)(";
+        String testString1 = "((+!,11  .   442)(a23-+(tix2u39u9nyu08%, 93ux h3028i9i8  988.23.31 9 $!()p  (a,   ,)#    (*U@!)! #!@ @ #@*5. 81.8  .   4.2  34 -     )6)b(b  (/a/2325)(";
         String testString2 = "&a+-=b*(c*cos(t-a*x)-d*sin(t+a*x)/(4.&81*k-q*t))/(d*cos(t+a*y/f1(5.616*x-t))+c*sin(t-a*y*((u-v*i)))";
         String testString3 = "1+(a+b&)    /   ";
         String testString4 = "a+(b*cos(x/y+2)";
@@ -29,16 +29,51 @@ class MainTest {
         String testString16 = "p((),())";
         String testString17 = "p   ((), s   )";
         String testString18 = "p(p())";
-        String test = "c6+11*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(v7/a/2325))";
-        new ExpressionParser().parse(test, true, true, true);
-//        System.out.println(testString1.charAt(136));
-//        System.out.println    ("jk");
-        // 6, 10
+        String testString19 = "(a+(s))";
+        String testString20 = "-5+(-6 + (-4) + p(  (4+(-5)) , (6 + 4), 6))";
+        String testString21 = "-5+6*9/0";
+        String testString22 = "-5/6*9/0";
+        String test = "c6+11*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/(0)/2325))";
+        String test2 = "c6+11*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/7/2325))";
+        new ExpressionParser().parse(test2, true, true, true, true, true);
 
-        List<Integer> errorPositions = List.of(4, 4, 7);
+        // !!!!!!!!! variable division on 0 Simplified expression: c6+4862/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/1028.23-p(a)/(g4*U)*266.2-z2)*6)*b(b(v7/0))
+
+        //        System.out.println(testString1.charAt(136));
+//        System.out.println    ("jk");
+
+//        List<String> list = new ArrayList<>();
+//        list.add("A");
+//        list.add("B");
+//        list.add("C");
+//        list.add("D");
+//        list.add("E");
+//
+//        // Specify start (inclusive) and end (exclusive) indexes
+//        int startIndex = 1;
+//        int endIndex = 4;
+//
+//        List<String> l = list.subList(startIndex, endIndex);
+//        System.out.println(l);
+//        l.clear();
+//
+//        System.out.println(list); // Output will be [A, E]
+//        System.out.println(list.size());
+//
+//        list.add(1, "FFF");
+//        System.out.println(list);
+
+//        List<Integer> errorPositions = List.of(4, 4, 7);
 
         // Find the maximum position to determine the number of lines
 //        int maxPosition = Collections.max(errorPositions);
 //        System.out.println(maxPosition);
+
+//        int a = 4;
+//        System.out.println(-5+(-a));
+//        System.out.println(5/0);
+
+//        System.out.println(Double.parseDouble("-0") == 0);
+        Double.parseDouble("0");
     }
 }

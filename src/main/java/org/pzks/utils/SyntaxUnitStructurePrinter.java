@@ -9,38 +9,33 @@ import java.util.List;
 
 public class SyntaxUnitStructurePrinter {
 
-    private static final StringBuilder detailedTreeSpaceBuilder = new StringBuilder();
     private static final StringBuilder spaceBuilder = new StringBuilder();
 
-    public static void printTreeWithDetails(List<SyntaxUnit> syntaxUnits) {
+    public static void printTree(List<SyntaxUnit> syntaxUnits, boolean printWithDetails) {
         for (SyntaxUnit syntaxUnit : syntaxUnits) {
-            System.out.println(detailedTreeSpaceBuilder + "- " + syntaxUnit);
-            if (!syntaxUnit.getSyntaxUnits().isEmpty()) {
-                List<SyntaxUnit> internalSyntaxUnits = syntaxUnit.getSyntaxUnits();
-                detailedTreeSpaceBuilder.append("     ");
-                printTreeWithDetails(internalSyntaxUnits);
-                detailedTreeSpaceBuilder.setLength(detailedTreeSpaceBuilder.length() - 5);
-            }
-        }
-    }
-
-    public static void printTree(List<SyntaxUnit> syntaxUnits) {
-        for (SyntaxUnit syntaxUnit : syntaxUnits) {
-            System.out.println(spaceBuilder + "- " + syntaxUnit.treeUnitRepresentation());
+            String syntaxUnitStringRepresentation = printWithDetails ? syntaxUnit.toString() : syntaxUnit.treeUnitRepresentation();
+            System.out.println(spaceBuilder + "- " + syntaxUnitStringRepresentation);
             if (!syntaxUnit.getSyntaxUnits().isEmpty()) {
                 List<SyntaxUnit> internalSyntaxUnits = syntaxUnit.getSyntaxUnits();
                 spaceBuilder.append("     ");
-                printTree(internalSyntaxUnits);
+                printTree(internalSyntaxUnits, printWithDetails);
                 spaceBuilder.setLength(spaceBuilder.length() - 5);
             }
         }
     }
 
-    public static void printAsString(List<SyntaxUnit> syntaxUnits) {
+    public static void printTreeWithHeadline(boolean printTree, boolean includeDetails, SyntaxUnit parsedSyntaxUnit, String headline) {
+        if (printTree) {
+            HeadlinePrinter.print(headline, Color.CYAN);
+            List<SyntaxUnit> syntaxUnits = parsedSyntaxUnit.getSyntaxUnits();
+            SyntaxUnitStructurePrinter.printTree(syntaxUnits, includeDetails);
+        }
+    }
+
+    public static String getExpressionAsString(List<SyntaxUnit> syntaxUnits) {
         StringBuilder expression = new StringBuilder();
         addSyntaxUnitsToString(syntaxUnits, expression);
-        String expressionToPrint = expression.toString().replaceAll("\\s+", "");
-        System.out.println(expressionToPrint);
+        return expression.toString().replaceAll("\\s+", "");
     }
 
     public static void printExpressionWithErrorsPointing(String expression, List<Integer> errorsPositions) {
