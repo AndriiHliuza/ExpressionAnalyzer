@@ -37,7 +37,7 @@ public class DivisionByZeroDetector {
                 if (syntaxContainer instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
                     SyntaxUnit syntaxUnitInsideLogicalBlock = logicalBlock.getSyntaxUnits().getFirst();
                     if (syntaxUnitInsideLogicalBlock instanceof Number) {
-                        double currentNumber = Double.parseDouble(syntaxUnit.getValue());
+                        double currentNumber = Double.parseDouble(syntaxUnitInsideLogicalBlock.getValue());
                         SyntaxUnit previousSyntaxUnit = syntaxUnits.get(i - 1);
                         if (previousSyntaxUnit instanceof Operation && previousSyntaxUnit.getValue().equals("/") && currentNumber == 0) {
                             errors.add(new SyntaxUnitErrorMessageBuilder(previousSyntaxUnit.getIndex(), "Division by zero"));

@@ -33,10 +33,42 @@ class MainTest {
         String testString20 = "-5+(-6 + (-4) + p(  (4+(-5)) , (6 + 4), 6))";
         String testString21 = "-5+6*9/0";
         String testString22 = "-5/6*9/0";
+        String testString23 = "1*0 * 5 + 0 / (5-5 ) * a";
+        String testString24 = "0 / (5-5)";
+        String testString25 = "-a";
+        String testString26 = "7 / (0)";
         String test = "c6+11*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/(0)/2325))";
         String test2 = "c6+0*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/7/2325))";
-        new ExpressionParser().parse(test2, true, true, true, true, true);
+        new ExpressionParser().parse(testString23, true, true, true, true, true);
+//        List<String> s = new ArrayList<>();
+//        s.add("1");
+//        s.add("2");
+//        s.add("3");
+//        s.add("4");
+//        s.add("5");
+//        s.add("6");
+//        System.out.println(s);
+//        for (int i = 0; i < s.size(); i++) {
+//            if (i == 2) {
+//                s.subList(i, i + 2).clear();
+//                s.add(i, "9");
+//            }
+//        }
 
+//        System.out.println(s);
+//        String a = "-";
+//        switch (a) {
+//            case String operationValue when operationValue.matches("[+-]") -> {
+//                System.out.println("+-");
+//            }
+//            case String operationValue when operationValue.equals("*") -> {
+//                System.out.println("*");
+//            }
+//            case String operationValue when operationValue.equals("/") -> {
+//                System.out.println("/");
+//            }
+//            default -> throw new IllegalStateException("Unexpected value: ");
+//        }
         // !!!!!!!!! variable division on 0 Simplified expression: c6+4862/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/1028.23-p(a)/(g4*U)*266.2-z2)*6)*b(b(v7/0))
 
         //        System.out.println(testString1.charAt(136));
@@ -75,5 +107,6 @@ class MainTest {
 
 //        System.out.println(Double.parseDouble("-0") == 0);
 //        Double.parseDouble("0");
+//        System.out.println(0.0/0.0);
     }
 }
