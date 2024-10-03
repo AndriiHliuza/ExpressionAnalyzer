@@ -28,19 +28,12 @@ public class ExpressionParser {
         boolean isExpressionValid = calculateAndShowErrors(showErrors, value, parsedSyntaxUnit);
         parsedSyntaxUnit = fixExpression(fixSyntaxUnits, value, parsedSyntaxUnit);
 
-        boolean isArithmeticErrorsPresent = true;
         if (isExpressionValid) {
-            isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit, fixSyntaxUnits, printTreeOfFixedAndSimplifiedExpression);
-        }
-
-        if (!isArithmeticErrorsPresent) {
-            parsedSyntaxUnit = simplifyExpression(fixSyntaxUnits, printTreeOfFixedAndSimplifiedExpression, value, parsedSyntaxUnit);
-            isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit, fixSyntaxUnits, printTreeOfFixedAndSimplifiedExpression);
-        }
-
-        if (!isArithmeticErrorsPresent) {
-            String simplifiedExpression = SyntaxUnitStructurePrinter.getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
-            System.out.println(Color.GREEN.getAnsiValue() + "Simplified expression: " + Color.DEFAULT.getAnsiValue() + simplifiedExpression);
+            parsedSyntaxUnit = simplifyExpression(parsedSyntaxUnit);
+            boolean isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit, printTreeOfFixedAndSimplifiedExpression);
+            if (!isArithmeticErrorsPresent) {
+                printSimplifiedExpression(parsedSyntaxUnit, value, printTreeOfFixedAndSimplifiedExpression);
+            }
         }
 
         System.out.println();
@@ -104,7 +97,7 @@ public class ExpressionParser {
 
     private SyntaxUnit fixExpression(boolean fixExpression, String expression, SyntaxUnit parsedSyntaxUnit) throws Exception {
         if (fixExpression) {
-            HeadlinePrinter.print("Corrections", Color.GREEN);
+            HeadlinePrinter.print("Syntax corrections", Color.GREEN);
             new ExpressionFixer(parsedSyntaxUnit.getSyntaxUnits()).fix();
             System.out.println(Color.GREEN.getAnsiValue() + "Original expression: " + Color.DEFAULT.getAnsiValue() + expression);
             String fixedExpression = SyntaxUnitStructurePrinter.getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
@@ -116,52 +109,40 @@ public class ExpressionParser {
         return parsedSyntaxUnit;
     }
 
-    private SyntaxUnit simplifyExpression(boolean isExpressionFixed, boolean printTreeOfFixedAndSimplifiedExpression, String fixedExpression, SyntaxUnit parsedSyntaxUnit) throws Exception {
-        if (isExpressionFixed) {
-            new ExpressionSimplifier(parsedSyntaxUnit.getSyntaxUnits()).simplify();
-            String simplifiedExpression = SyntaxUnitStructurePrinter.getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
-            parsedSyntaxUnit = convertExpressionToParsedSyntaxUnit(simplifiedExpression);
-        }
+    private SyntaxUnit simplifyExpression(SyntaxUnit parsedSyntaxUnit) throws Exception {
+        new ExpressionSimplifier(parsedSyntaxUnit.getSyntaxUnits()).simplify();
+        String simplifiedExpression = SyntaxUnitStructurePrinter.getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
+        parsedSyntaxUnit = convertExpressionToParsedSyntaxUnit(simplifiedExpression);
         return parsedSyntaxUnit;
     }
 
-    private boolean detectArithmeticErrors(SyntaxUnit syntaxUnit, boolean isExpressionFixed, boolean printTreeOfFixedAndSimplifiedExpression) {
+    private boolean detectArithmeticErrors(SyntaxUnit syntaxUnit, boolean printTreeOfFixedAndSimplifiedExpression) {
         boolean isErrorsPresent = false;
 
         syntaxUnit.analyzeArithmeticErrors();
         List<SyntaxUnitErrorMessageBuilder> arithmeticErrors = syntaxUnit.getArithmeticErrors();
 
-        if (!arithmeticErrors.isEmpty()) {
-            if (isExpressionFixed) {
-                String expression = SyntaxUnitStructurePrinter.getExpressionAsString(syntaxUnit.getSyntaxUnits());
-                List<Integer> errorsPositions = arithmeticErrors.stream()
-                        .map(SyntaxUnitErrorMessageBuilder::getErrorPosition)
-                        .toList();
-                HeadlinePrinter.print("Arithmetic Errors", Color.RED);
-                SyntaxUnitStructurePrinter.printExpressionWithErrorsPointing(expression, errorsPositions);
-                arithmeticErrors.forEach(System.out::println);
-                isErrorsPresent = true;
-            }
+        if (!arithmeticErrors.isEmpty() && printTreeOfFixedAndSimplifiedExpression) {
+            String expression = SyntaxUnitStructurePrinter.getExpressionAsString(syntaxUnit.getSyntaxUnits());
+            List<Integer> errorsPositions = arithmeticErrors.stream()
+                    .map(SyntaxUnitErrorMessageBuilder::getErrorPosition)
+                    .toList();
+            HeadlinePrinter.print("Arithmetic Errors", Color.RED);
+            SyntaxUnitStructurePrinter.printExpressionWithErrorsPointing(expression, errorsPositions);
+            arithmeticErrors.forEach(System.out::println);
+            isErrorsPresent = true;
         }
 
         return isErrorsPresent;
     }
 
-//    private SyntaxUnit simplifyExpressionByProcessingMultiplicationByZero(boolean isExpressionFixed, boolean printTreeOfFixedAndSimplifiedExpression, String expression, SyntaxUnit syntaxUnit) throws Exception {
-//        if (isExpressionFixed) {
-//            HeadlinePrinter.print("Simplifications", Color.GREEN);
-//            new ExpressionSimplifier(syntaxUnit.getSyntaxUnits()).simplifyByProcessingMultiplicationByZero();
-//            String simplifiedExpression = SyntaxUnitStructurePrinter.getExpressionAsString(syntaxUnit.getSyntaxUnits());
-//            System.out.println(Color.GREEN.getAnsiValue() + "Simplified expression: " + Color.DEFAULT.getAnsiValue() + simplifiedExpression);
-//            System.out.println(Color.GREEN.getAnsiValue() + "Is simplified: " + Color.DEFAULT.getAnsiValue() + !expression.equals(simplifiedExpression));
-//
-//            syntaxUnit = convertExpressionToParsedSyntaxUnit(simplifiedExpression);
-//
-//            if (printTreeOfFixedAndSimplifiedExpression) {
-//                SyntaxUnitStructurePrinter.printTreeWithHeadline(true, false, syntaxUnit, "Corrected & Simplified expression tree");
-//            }
-//        }
-//        return syntaxUnit;
-//
-//    }
+    private void printSimplifiedExpression(SyntaxUnit syntaxUnit, String baseExpression, boolean printSimplifiedExpression) {
+        if (printSimplifiedExpression) {
+            HeadlinePrinter.print("Simplifications", Color.GREEN);
+            System.out.println(Color.GREEN.getAnsiValue() + "Original expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
+            String simplifiedExpression = SyntaxUnitStructurePrinter.getExpressionAsString(syntaxUnit.getSyntaxUnits());
+            System.out.println(Color.GREEN.getAnsiValue() + "Simplified expression: " + Color.DEFAULT.getAnsiValue() + simplifiedExpression);
+            System.out.println(Color.GREEN.getAnsiValue() + "Is simplified: " + Color.DEFAULT.getAnsiValue() + !baseExpression.replaceAll("\\s+", "").equals(simplifiedExpression));
+        }
+    }
 }

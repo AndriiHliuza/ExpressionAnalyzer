@@ -19,10 +19,20 @@ public class OperationFixer extends SyntaxUnitFixer {
         }
 
         if (getCurrentUnitPositionInSyntaxUnitsList() == 0) {
-            getSyntaxUnits().addFirst(
-                    new Variable(0, RandomValuesGenerator.generateVariableName())
-            );
-            setNewSyntaxUnitAddedBetweenTheCurrentAndThePreviousSyntaxUnit(true);
+            if (getCurrentUnitPositionInSyntaxUnitsList() < getSyntaxUnits().size() - 1) {
+                SyntaxUnit nextSyntaxUnit = getSyntaxUnits().get(getCurrentUnitPositionInSyntaxUnitsList() + 1);
+                if (!((nextSyntaxUnit instanceof Variable || nextSyntaxUnit instanceof SyntaxContainer) && getCurrentSyntaxUnit().getValue().matches("[+\\-]"))) {
+                    getSyntaxUnits().addFirst(
+                            new Variable(0, RandomValuesGenerator.generateVariableName())
+                    );
+                    setNewSyntaxUnitAddedBetweenTheCurrentAndThePreviousSyntaxUnit(true);
+                }
+            } else {
+                getSyntaxUnits().addFirst(
+                        new Variable(0, RandomValuesGenerator.generateVariableName())
+                );
+                setNewSyntaxUnitAddedBetweenTheCurrentAndThePreviousSyntaxUnit(true);
+            }
         }
 
         if (getCurrentUnitPositionInSyntaxUnitsList() == getSyntaxUnits().size() - 1) {

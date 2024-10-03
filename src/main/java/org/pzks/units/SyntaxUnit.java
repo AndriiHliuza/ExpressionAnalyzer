@@ -111,7 +111,7 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxErrorsAnalyzer, Arith
             } else if (basicExpressionUnitRecognizer.isValidAlphaNumericNaming(logicalUnit)) {
                 syntaxUnits.add(new Variable(syntaxUnitIndex, logicalUnit));
             } else if (basicExpressionUnitRecognizer.isOperation(logicalUnit)) {
-                if (logicalUnit.equals("-") && i == 0 && logicalUnits.size() - 1 > i) {
+                if (logicalUnit.matches("[+\\-]") && i == 0 && logicalUnits.size() - 1 > i) {
                     String nextLogicalUnit = logicalUnits.get(i + 1);
                     if (basicExpressionUnitRecognizer.isFloatNumber(nextLogicalUnit)) {
                         syntaxUnits.add(new Number(syntaxUnitIndex, logicalUnit + nextLogicalUnit));
@@ -180,7 +180,14 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxErrorsAnalyzer, Arith
             if ((syntaxUnit instanceof Operation ||
                     syntaxUnit instanceof UnknownSyntaxUnitSequence ||
                     syntaxUnit instanceof UnknownSyntaxUnit) && i == 0) {
-                processInvalidFirstSyntaxUnitInsideAnotherSyntaxUnit(syntaxUnit);
+                if (syntaxUnit instanceof Operation operation && operation.getValue().matches("[+\\-]") && i < syntaxUnits.size() - 1) {
+                    SyntaxUnit nextSyntaxUnit = syntaxUnits.get(i + 1);
+                    if (nextSyntaxUnit instanceof UnknownSyntaxUnit || nextSyntaxUnit instanceof UnknownSyntaxUnitSequence) {
+                        processInvalidFirstSyntaxUnitInsideAnotherSyntaxUnit(syntaxUnit);
+                    }
+                } else {
+                    processInvalidFirstSyntaxUnitInsideAnotherSyntaxUnit(syntaxUnit);
+                }
             } else {
                 SyntaxUnitCompatibilityAnalyzer syntaxUnitCompatibilityAnalyzer = null;
                 SyntaxUnit previousSyntaxUnit = getPreviousSyntaxUnit(i, syntaxUnit);

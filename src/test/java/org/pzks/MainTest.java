@@ -37,11 +37,37 @@ class MainTest {
         String testString24 = "0 / (5-5)";
         String testString25 = "0+a";
         String testString26 = "7 / (0)";
+        String testString27 = "7 + a";
+        String testString28 = "a + 7";
+        String testString29 = "((1))*d"; // positive 1 +1 (+1) works fine with not number
+        String testString29_1 = "d*((1))"; // positive 1 +1 (+1) works fine with not numbers
+        String testString30 = "4*(-1)";
+        String testString31 = "(-3)*5";
+        String testString32 = "(-0)*d"; // no
+        String testString33 = "d*(-7)";
+        String testString34 = "(-7)*d";
+        String testString35 = "b(8/(0))";
+        String testString36 = "d/(8*0)";
+
+        String testString37 = "(+0)*d"; // + and - zero works fine
+        String testString38 = "d*((-0))"; // + and - zero works fine
+
+
+        String testString39 = "(-1)*d()"; // + and - one works fine
+        String testString40 = "d*(-1)"; // + and - one works fine
+        String testString41 = "4*d()*(-1)"; // + and - one works fine
+
+
         String test = "c6+11*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/(0)/2325))";
         String test2 = "c6+0*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/7/2325))";
-        new ExpressionParser().parse(testString25, true, true, true, true, true);
+        String test3 = "0*c6*0+11*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31/0+9-p(a)/(g4*U)*5*81.8-4.2*34-z2+(5-5/(4-4)))*6)*b(b(6/7/2325))";
+        String test4 = "-5*5+(+s)";
+        String test5 = "5+(+s)";
+        new ExpressionParser().parse(testString41, true, true, true, true, true);
 
 
+//        int a = 2;
+//        System.out.println(-a);
 //        List<String> s = new ArrayList<>();
 //        s.add("1");
 //        s.add("2");
