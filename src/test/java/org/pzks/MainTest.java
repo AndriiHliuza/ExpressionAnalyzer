@@ -35,11 +35,13 @@ class MainTest {
         String testString22 = "-5/6*9/0";
         String testString23 = "1*0 * 5 + 0 / (5-5 ) * a";
         String testString24 = "0 / (5-5)";
-        String testString25 = "-a";
+        String testString25 = "0+a";
         String testString26 = "7 / (0)";
         String test = "c6+11*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/(0)/2325))";
         String test2 = "c6+0*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/7/2325))";
-        new ExpressionParser().parse(testString23, true, true, true, true, true);
+        new ExpressionParser().parse(testString25, true, true, true, true, true);
+
+
 //        List<String> s = new ArrayList<>();
 //        s.add("1");
 //        s.add("2");

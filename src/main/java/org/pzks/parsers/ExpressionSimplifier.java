@@ -19,8 +19,6 @@ public class ExpressionSimplifier {
     }
 
     public void simplify() throws Exception {
-//        removeUnnecessaryBracketsInLogicalBlocks(syntaxUnits);
-
         combineAdjacentSyntaxUnits(syntaxUnits);
     }
 
@@ -49,41 +47,14 @@ public class ExpressionSimplifier {
         }
     }
 
-    private void combineAdjacentSyntaxUnits2(List<SyntaxUnit> syntaxUnits) throws Exception {
-        syntaxUnits = simplifySimpleUnits(syntaxUnits);
-
-        for (int i = 0; i < syntaxUnits.size(); i++) {
-            SyntaxUnit currentSyntaxUnit = syntaxUnits.get(i);
-            if (!(currentSyntaxUnit instanceof Operation)) {
-                if (i + 2 < syntaxUnits.size()) {
-                    SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(i + 1);
-                    i = switch (nextOperationAsSyntaxUnit.getValue()) {
-                        case String operationValue when operationValue.equals("+") ->
-                                processPlusOperationWithSyntaxUnits(i, syntaxUnits);
-                        case String operationValue when operationValue.equals("-") ->
-                                processMinusOperationWithSyntaxUnits(i, syntaxUnits);
-                        case String operationValue when operationValue.equals("*") ->
-                                processMultiplicationOperationWithSyntaxUnits(i, syntaxUnits);
-                        case String operationValue when operationValue.equals("/") ->
-                                processDivisionOperationWithSyntaxUnits(i, syntaxUnits);
-                        default ->
-                                throw new IllegalStateException("Unexpected operation: " + nextOperationAsSyntaxUnit.getValue());
-                    };
-                } else {
-                    //TODO maybe implement functionality
-                }
-            }
-        }
-    }
-
     private void combineAdjacentSyntaxUnits(List<SyntaxUnit> syntaxUnits) throws Exception {
         removeUnnecessaryBracketsInLogicalBlocks(syntaxUnits);
-        syntaxUnits = simplifySimpleUnits(syntaxUnits);
+        simplifySimpleUnits(syntaxUnits);
 
         for (int i = 0; i < syntaxUnits.size(); i++) {
             SyntaxUnit currentSyntaxUnit = syntaxUnits.get(i);
             if (currentSyntaxUnit instanceof Number) {
-                i = calculateCombinedNumber(i, syntaxUnits);
+                i = combineAdjacentSyntaxUnitIfCurrentUnitIsNumber(i, syntaxUnits);
             } else if (currentSyntaxUnit instanceof SyntaxContainer syntaxContainer) {
                 if (syntaxContainer instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
                     SyntaxUnit syntaxUnitInsideLogicalBlock = logicalBlock.getSyntaxUnits().getFirst();
@@ -103,8 +74,9 @@ public class ExpressionSimplifier {
                         if (nextOperationAsSyntaxUnit instanceof Operation operation && nextSyntaxUnit instanceof Number nextNumberAsSyntaxUnit) {
                             double nextNumber = Double.parseDouble(nextNumberAsSyntaxUnit.getValue());
                             if (nextNumber == 0 && operation.getValue().equals("*")) {
-                                syntaxContainer.analyzeArithmeticErrors();
-                                if (syntaxContainer.getArithmeticErrors().isEmpty()) {
+                                currentSyntaxUnit = syntaxUnits.get(i);
+                                currentSyntaxUnit.analyzeArithmeticErrors();
+                                if (currentSyntaxUnit.getArithmeticErrors().isEmpty()) {
                                     if (i - 2 >= 0) {
                                         SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(i - 1);
                                         if (previousOperationAsSyntaxUnit.getValue().matches("[*+\\-]")) {
@@ -151,139 +123,296 @@ public class ExpressionSimplifier {
         }
     }
 
-    private int calculateCombinedNumber(int currentIndexInSyntaxUnits, List<SyntaxUnit> syntaxUnits) throws Exception {
+    private int combineAdjacentSyntaxUnitIfCurrentUnitIsNumber(int currentIndexInSyntaxUnits, List<SyntaxUnit> syntaxUnits) throws Exception {
+        if (currentIndexInSyntaxUnits + 2 < syntaxUnits.size()) {
+            SyntaxUnit nextSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 2);
+            if (nextSyntaxUnit instanceof Number) {
+                currentIndexInSyntaxUnits = combineNumbers(currentIndexInSyntaxUnits, syntaxUnits);
+            } else if (nextSyntaxUnit instanceof SyntaxContainer syntaxContainer) {
+                currentIndexInSyntaxUnits = combineNumberWithContainer(currentIndexInSyntaxUnits, syntaxUnits);
+            } else {
+                currentIndexInSyntaxUnits = combineNumberWithSyntaxUnit(currentIndexInSyntaxUnits, syntaxUnits);
+            }
+        }
+
+        return currentIndexInSyntaxUnits;
+    }
+
+    private int combineNumbers(int currentIndexInSyntaxUnits, List<SyntaxUnit> syntaxUnits) {
         SyntaxUnit currentNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits);
         double currentNumber = Double.parseDouble(currentNumberAsSyntaxUnit.getValue());
 
-        if (currentIndexInSyntaxUnits + 2 < syntaxUnits.size()) {
-            SyntaxUnit nextSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 2);
-            if (nextSyntaxUnit instanceof Number nextNumberAsSyntaxUnit) {
-                double nextNumber = Double.parseDouble(nextNumberAsSyntaxUnit.getValue());
-                SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 1);
-                if (nextOperationAsSyntaxUnit instanceof Operation operation) {
-                    switch (operation.getValue()) {
-                        case String operationValue when operationValue.matches("[+\\-]") -> {
-                            if (currentIndexInSyntaxUnits - 2 >= 0 && currentIndexInSyntaxUnits + 4 < syntaxUnits.size()) {
-                                SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
-                                SyntaxUnit nextOperationAfterNextNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 3);
-                                if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]") && nextOperationAfterNextNumberAsSyntaxUnit.getValue().matches("[+\\-]")) {
-                                    double result = calculateResult(operationValue, currentNumber, nextNumber);
-                                    syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
-                                    syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
-                                    currentIndexInSyntaxUnits--;
-                                }
-                            } else if (currentIndexInSyntaxUnits - 2 >= 0) {
-                                SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
-                                if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]")) {
-                                    double result = calculateResult(operationValue, currentNumber, nextNumber);
-                                    syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
-                                    syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
-                                    currentIndexInSyntaxUnits--;
-                                }
-                            } else if (currentIndexInSyntaxUnits + 4 < syntaxUnits.size()) {
-                                SyntaxUnit nextOperationAfterNextNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 3);
-                                if (nextOperationAfterNextNumberAsSyntaxUnit.getValue().matches("[+\\-]")) {
-                                    double result = calculateResult(operationValue, currentNumber, nextNumber);
-                                    syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
-                                    syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
-                                    currentIndexInSyntaxUnits--;
-                                }
-                            } else {
-                                double result = calculateResult(operationValue, currentNumber, nextNumber);
-                                syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
-                                syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
-                                currentIndexInSyntaxUnits--;
-                            }
-                        }
-                        case String operationValue when operationValue.equals("*") -> {
-                            if (currentIndexInSyntaxUnits - 2 >= 0) {
-                                SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
-                                if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-*]")) {
-                                    double result = calculateResult(operationValue, currentNumber, nextNumber);
-                                    syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
-                                    syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
-                                    currentIndexInSyntaxUnits--;
-                                }
-                            } else {
-                                double result = calculateResult(operationValue, currentNumber, nextNumber);
-                                syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
-                                syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
-                                currentIndexInSyntaxUnits--;
-                            }
-                        }
-                        case String operationValue when operationValue.equals("/") -> {
-                            if (currentIndexInSyntaxUnits - 2 >= 0) {
-                                SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
-                                if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]") && nextNumber != 0) {
-                                    double result = calculateResult(operationValue, currentNumber, nextNumber);
-                                    syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
-                                    syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
-                                    currentIndexInSyntaxUnits--;
-                                }
-                            } else if (nextNumber != 0) {
-                                double result = calculateResult(operationValue, currentNumber, nextNumber);
-                                syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
-                                syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
-                                currentIndexInSyntaxUnits--;
-                            }
-                        }
-                        default -> throw new IllegalStateException("Unexpected value: " + operation.getValue());
-                    }
-                }
-            } else if (nextSyntaxUnit instanceof SyntaxContainer syntaxContainer) {
-                if (syntaxContainer instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
-                    SyntaxUnit syntaxUnitInsideLogicalBlock = logicalBlock.getSyntaxUnits().getFirst();
-                    syntaxUnits.set(currentIndexInSyntaxUnits + 2, syntaxUnitInsideLogicalBlock);
-                    currentIndexInSyntaxUnits--;
-                } else {
-                    boolean decrementCurrentIndexInSyntaxUnits = false;
-                    combineAdjacentSyntaxUnits(syntaxContainer.getSyntaxUnits());
-                    if (syntaxContainer instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
-                        SyntaxUnit syntaxUnitInsideLogicalBlock = logicalBlock.getSyntaxUnits().getFirst();
-                        syntaxUnits.set(currentIndexInSyntaxUnits + 2, syntaxUnitInsideLogicalBlock);
-                        decrementCurrentIndexInSyntaxUnits = true;
-                    }
-                    SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 1);
-                    if (nextOperationAsSyntaxUnit instanceof Operation operation) {
-                        if (currentNumber == 0 && operation.getValue().matches("[*/]")) {
-                            nextSyntaxUnit.analyzeArithmeticErrors();
-                            if (nextSyntaxUnit.getArithmeticErrors().isEmpty()) {
-                                nextSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 2);
-                                if (!(operation.getValue().equals("/") && nextSyntaxUnit.getValue().matches("0|\\+0|-0"))) {
-                                    if (currentIndexInSyntaxUnits - 2 >= 0) {
-                                        SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
-                                        if (previousOperationAsSyntaxUnit.getValue().matches("[*+\\-]")) {
-                                            syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
-                                            decrementCurrentIndexInSyntaxUnits = true;
-                                        }
-                                    } else {
-                                        syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
-                                        decrementCurrentIndexInSyntaxUnits = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
+        SyntaxUnit nextNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 2);
 
-                    if (decrementCurrentIndexInSyntaxUnits) {
+        double nextNumber = Double.parseDouble(nextNumberAsSyntaxUnit.getValue());
+        SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 1);
+        if (nextOperationAsSyntaxUnit instanceof Operation operation) {
+            switch (operation.getValue()) {
+                case String operationValue when operationValue.matches("[+\\-]") -> {
+                    if (currentIndexInSyntaxUnits - 2 >= 0 && currentIndexInSyntaxUnits + 4 < syntaxUnits.size()) {
+                        SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                        SyntaxUnit nextOperationAfterNextNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 3);
+                        if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]") && nextOperationAfterNextNumberAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                            double result = calculateResult(operationValue, currentNumber, nextNumber);
+                            syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
+                            syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
+                            currentIndexInSyntaxUnits--;
+                        }
+                    } else if (currentIndexInSyntaxUnits - 2 >= 0) {
+                        SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                        if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                            double result = calculateResult(operationValue, currentNumber, nextNumber);
+                            syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
+                            syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
+                            currentIndexInSyntaxUnits--;
+                        }
+                    } else if (currentIndexInSyntaxUnits + 4 < syntaxUnits.size()) {
+                        SyntaxUnit nextOperationAfterNextNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 3);
+                        if (nextOperationAfterNextNumberAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                            double result = calculateResult(operationValue, currentNumber, nextNumber);
+                            syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
+                            syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
+                            currentIndexInSyntaxUnits--;
+                        }
+                    } else {
+                        double result = calculateResult(operationValue, currentNumber, nextNumber);
+                        syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
+                        syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
                         currentIndexInSyntaxUnits--;
                     }
                 }
-            } else {
-                SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 1);
-                if (nextOperationAsSyntaxUnit instanceof Operation operation) {
-                    if (currentNumber == 0 && operation.getValue().matches("[*/]")) {
-                        if (currentIndexInSyntaxUnits - 2 >= 0) {
-                            SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
-                            if (previousOperationAsSyntaxUnit.getValue().matches("[*+\\-]")) {
-                                syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
-                                currentIndexInSyntaxUnits--;
-                            }
-                        } else {
-                            syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
+                case String operationValue when operationValue.equals("*") -> {
+                    if (currentIndexInSyntaxUnits - 2 >= 0) {
+                        SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                        if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-*]")) {
+                            double result = calculateResult(operationValue, currentNumber, nextNumber);
+                            syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
+                            syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
                             currentIndexInSyntaxUnits--;
                         }
+                    } else {
+                        double result = calculateResult(operationValue, currentNumber, nextNumber);
+                        syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
+                        syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
+                        currentIndexInSyntaxUnits--;
                     }
+                }
+                case String operationValue when operationValue.equals("/") -> {
+                    if (currentIndexInSyntaxUnits - 2 >= 0) {
+                        SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                        if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]") && nextNumber != 0) {
+                            double result = calculateResult(operationValue, currentNumber, nextNumber);
+                            syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
+                            syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
+                            currentIndexInSyntaxUnits--;
+                        }
+                    } else if (nextNumber != 0) {
+                        double result = calculateResult(operationValue, currentNumber, nextNumber);
+                        syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
+                        syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, convertDoubleToStringWithRounding(result)));
+                        currentIndexInSyntaxUnits--;
+                    }
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + operation.getValue());
+            }
+        }
+
+        return currentIndexInSyntaxUnits;
+    }
+
+    private int combineNumberWithContainer(int currentIndexInSyntaxUnits, List<SyntaxUnit> syntaxUnits) throws Exception {
+        SyntaxUnit currentNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits);
+        double currentNumber = Double.parseDouble(currentNumberAsSyntaxUnit.getValue());
+
+        SyntaxUnit syntaxContainer = syntaxUnits.get(currentIndexInSyntaxUnits + 2);
+
+        if (syntaxContainer instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
+            SyntaxUnit syntaxUnitInsideLogicalBlock = logicalBlock.getSyntaxUnits().getFirst();
+            syntaxUnits.set(currentIndexInSyntaxUnits + 2, syntaxUnitInsideLogicalBlock);
+            currentIndexInSyntaxUnits--;
+        } else {
+            boolean decrementCurrentIndexInSyntaxUnits = false;
+            combineAdjacentSyntaxUnits(syntaxContainer.getSyntaxUnits());
+            if (syntaxContainer instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
+                SyntaxUnit syntaxUnitInsideLogicalBlock = logicalBlock.getSyntaxUnits().getFirst();
+                syntaxUnits.set(currentIndexInSyntaxUnits + 2, syntaxUnitInsideLogicalBlock);
+                decrementCurrentIndexInSyntaxUnits = true;
+            }
+//            SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 1);
+//            if (nextOperationAsSyntaxUnit instanceof Operation operation) {
+//                if (currentNumber == 0) {
+//                    switch (operation.getValue()) {
+//                        case String operationValue when operationValue.matches("[*/]") -> {
+//                            syntaxContainer = syntaxUnits.get(currentIndexInSyntaxUnits + 2);
+//                            syntaxContainer.analyzeArithmeticErrors();
+//                            if (syntaxContainer.getArithmeticErrors().isEmpty()) {
+//                                if (!(operation.getValue().equals("/") && syntaxContainer.getValue().matches("0|\\+0|-0"))) {
+//                                    if (currentIndexInSyntaxUnits - 2 >= 0) {
+//                                        SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+//                                        if (previousOperationAsSyntaxUnit.getValue().matches("[*+\\-]")) {
+//                                            syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
+//                                            decrementCurrentIndexInSyntaxUnits = true;
+//                                        }
+//                                    } else {
+//                                        syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
+//                                        decrementCurrentIndexInSyntaxUnits = true;
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        case String operationValue when operationValue.equals("+") -> {
+//                            if (currentIndexInSyntaxUnits - 2 >= 0) {
+//                                SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+//                                if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]")) {
+//                                    syntaxUnits.subList(currentIndexInSyntaxUnits - 1, currentIndexInSyntaxUnits + 1).clear();
+//                                    decrementCurrentIndexInSyntaxUnits = true;
+//                                }
+//                            } else {
+//                                syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 2).clear();
+//                                decrementCurrentIndexInSyntaxUnits = true;
+//                            }
+//                        }
+//                        case String operationValue when operationValue.equals("-") -> {
+//                            if (currentIndexInSyntaxUnits - 2 >= 0) {
+//                                SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+//                                if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]")) {
+//                                    syntaxUnits.subList(currentIndexInSyntaxUnits - 1, currentIndexInSyntaxUnits + 1).clear();
+//                                    decrementCurrentIndexInSyntaxUnits = true;
+//                                }
+//                            } else {
+//                                syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 1).clear();
+//                                decrementCurrentIndexInSyntaxUnits = true;
+//                            }
+//                        }
+//                        default -> throw new IllegalStateException("Unexpected value: " + operation.getValue());
+//                    }
+//                }
+//            }
+//
+            if (decrementCurrentIndexInSyntaxUnits) {
+                currentIndexInSyntaxUnits--;
+            }
+        }
+        return currentIndexInSyntaxUnits;
+    }
+
+    private int combineNumberWithSyntaxUnit(int currentIndexInSyntaxUnits, List<SyntaxUnit> syntaxUnits) {
+        SyntaxUnit currentNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits);
+        double currentNumber = Double.parseDouble(currentNumberAsSyntaxUnit.getValue());
+
+        SyntaxUnit nextSyntaxUnit;
+
+        boolean decrementCurrentIndexInSyntaxUnits = false;
+        SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 1);
+        if (nextOperationAsSyntaxUnit instanceof Operation operation) {
+            if (currentNumber == 0) {
+                switch (operation.getValue()) {
+                    case String operationValue when operationValue.matches("[*/]") -> {
+                        nextSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 2);
+                        nextSyntaxUnit.analyzeArithmeticErrors();
+                        if (nextSyntaxUnit.getArithmeticErrors().isEmpty()) {
+                            if (!(operation.getValue().equals("/") && nextSyntaxUnit.getValue().matches("0|\\+0|-0"))) {
+                                if (currentIndexInSyntaxUnits - 2 >= 0) {
+                                    SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                                    if (previousOperationAsSyntaxUnit.getValue().matches("[*+\\-]")) {
+                                        syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
+                                        decrementCurrentIndexInSyntaxUnits = true;
+                                    }
+                                } else {
+                                    syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
+                                    decrementCurrentIndexInSyntaxUnits = true;
+                                }
+                            }
+                        }
+                    }
+                    case String operationValue when operationValue.equals("+") -> {
+                        if (currentIndexInSyntaxUnits - 2 >= 0) {
+                            SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                            if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                                syntaxUnits.subList(currentIndexInSyntaxUnits - 1, currentIndexInSyntaxUnits + 1).clear();
+                                decrementCurrentIndexInSyntaxUnits = true;
+                            }
+                        } else {
+                            syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 2).clear();
+                            decrementCurrentIndexInSyntaxUnits = true;
+                        }
+                    }
+                    case String operationValue when operationValue.equals("-") -> {
+                        if (currentIndexInSyntaxUnits - 2 >= 0) {
+                            SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                            if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                                syntaxUnits.subList(currentIndexInSyntaxUnits - 1, currentIndexInSyntaxUnits + 1).clear();
+                                decrementCurrentIndexInSyntaxUnits = true;
+                            }
+                        } else {
+                            syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 1).clear();
+                            decrementCurrentIndexInSyntaxUnits = true;
+                        }
+                    }
+                    default -> throw new IllegalStateException("Unexpected value: " + operation.getValue());
+                }
+            }
+        }
+        if (decrementCurrentIndexInSyntaxUnits) {
+            currentIndexInSyntaxUnits--;
+        }
+        return currentIndexInSyntaxUnits;
+    }
+
+    private int combineZeroNumberWithSyntaxContainerOrSyntaxUnit(int currentIndexInSyntaxUnits, List<SyntaxUnit> syntaxUnits, boolean decrementCurrentIndexInSyntaxUnits) {
+        SyntaxUnit currentNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits);
+        double currentNumber = Double.parseDouble(currentNumberAsSyntaxUnit.getValue());
+
+        SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 1);
+
+        SyntaxUnit nextSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 2);
+
+        if (nextOperationAsSyntaxUnit instanceof Operation operation) {
+            if (currentNumber == 0) {
+                switch (operation.getValue()) {
+                    case String operationValue when operationValue.matches("[*/]") -> {
+                        nextSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 2);
+                        nextSyntaxUnit.analyzeArithmeticErrors();
+                        if (nextSyntaxUnit.getArithmeticErrors().isEmpty()) {
+                            if (!(operation.getValue().equals("/") && nextSyntaxUnit.getValue().matches("0|\\+0|-0"))) {
+                                if (currentIndexInSyntaxUnits - 2 >= 0) {
+                                    SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                                    if (previousOperationAsSyntaxUnit.getValue().matches("[*+\\-]")) {
+                                        syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
+                                        decrementCurrentIndexInSyntaxUnits = true;
+                                    }
+                                } else {
+                                    syntaxUnits.subList(currentIndexInSyntaxUnits + 1, currentIndexInSyntaxUnits + 3).clear();
+                                    decrementCurrentIndexInSyntaxUnits = true;
+                                }
+                            }
+                        }
+                    }
+                    case String operationValue when operationValue.equals("+") -> {
+                        if (currentIndexInSyntaxUnits - 2 >= 0) {
+                            SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                            if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                                syntaxUnits.subList(currentIndexInSyntaxUnits - 1, currentIndexInSyntaxUnits + 1).clear();
+                                decrementCurrentIndexInSyntaxUnits = true;
+                            }
+                        } else {
+                            syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 2).clear();
+                            decrementCurrentIndexInSyntaxUnits = true;
+                        }
+                    }
+                    case String operationValue when operationValue.equals("-") -> {
+                        if (currentIndexInSyntaxUnits - 2 >= 0) {
+                            SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
+                            if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                                syntaxUnits.subList(currentIndexInSyntaxUnits - 1, currentIndexInSyntaxUnits + 1).clear();
+                                decrementCurrentIndexInSyntaxUnits = true;
+                            }
+                        } else {
+                            syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 1).clear();
+                            decrementCurrentIndexInSyntaxUnits = true;
+                        }
+                    }
+                    default -> throw new IllegalStateException("Unexpected value: " + operation.getValue());
                 }
             }
         }
@@ -291,7 +420,8 @@ public class ExpressionSimplifier {
         return currentIndexInSyntaxUnits;
     }
 
-    private List<SyntaxUnit> simplifySimpleUnits(List<SyntaxUnit> syntaxUnits) throws Exception {
+    // simple units simplifications
+    private void simplifySimpleUnits(List<SyntaxUnit> syntaxUnits) throws Exception {
         String expression = SyntaxUnitStructurePrinter.getExpressionAsString(syntaxUnits);
         // operations with 1
         expression = expression.replaceAll("(?<=[+\\-*])1\\*", "");   // 1*
@@ -315,240 +445,10 @@ public class ExpressionSimplifier {
         SyntaxUnit syntaxUnit = new ExpressionParser().convertExpressionToParsedSyntaxUnit(expression);
         syntaxUnits.clear();
         syntaxUnits.addAll(syntaxUnit.getSyntaxUnits());
-        return syntaxUnits;
     }
 
 
-    // +
-    private int processPlusOperationWithSyntaxUnits(int currentSyntaxUnitIndexInSyntaxUnitsList, List<SyntaxUnit> syntaxUnits) throws Exception {
-        if (currentSyntaxUnitIndexInSyntaxUnitsList - 2 >= 0) {
-            SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList - 1);
-
-            if (!(previousOperationAsSyntaxUnit.getValue().matches("[*/]"))) {
-                currentSyntaxUnitIndexInSyntaxUnitsList = processPlusOrMinusOperationsBasedOnNextOperationAsSyntaxUnit(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-            }
-        } else {
-            currentSyntaxUnitIndexInSyntaxUnitsList = processPlusOrMinusOperationsBasedOnNextOperationAsSyntaxUnit(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-        }
-
-        return currentSyntaxUnitIndexInSyntaxUnitsList;
-    }
-
-    // -
-    private int processMinusOperationWithSyntaxUnits(int currentSyntaxUnitIndexInSyntaxUnitsList, List<SyntaxUnit> syntaxUnits) throws Exception {
-        SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList + 1);
-
-        if (currentSyntaxUnitIndexInSyntaxUnitsList - 2 >= 0) {
-            SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList - 1);
-
-            if (!(previousOperationAsSyntaxUnit.getValue().matches("[*/]") ||
-                    (previousOperationAsSyntaxUnit.getValue().equals("-") && nextOperationAsSyntaxUnit.getValue().equals("-")))) {
-                currentSyntaxUnitIndexInSyntaxUnitsList = processPlusOrMinusOperationsBasedOnNextOperationAsSyntaxUnit(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-            }
-        } else {
-            currentSyntaxUnitIndexInSyntaxUnitsList = processPlusOrMinusOperationsBasedOnNextOperationAsSyntaxUnit(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-        }
-
-        return currentSyntaxUnitIndexInSyntaxUnitsList;
-    }
-
-    private int processPlusOrMinusOperationsBasedOnNextOperationAsSyntaxUnit(int currentSyntaxUnitIndexInSyntaxUnitsList, List<SyntaxUnit> syntaxUnits) throws Exception {
-        if (currentSyntaxUnitIndexInSyntaxUnitsList + 4 < syntaxUnits.size()) {
-            SyntaxUnit nextOperationAfterNextSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList + 3);
-            if (!nextOperationAfterNextSyntaxUnit.getValue().matches("[*/]")) {
-                currentSyntaxUnitIndexInSyntaxUnitsList = processPlusOrMinusOperation(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-            }
-        } else {
-            processPlusOrMinusOperation(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-        }
-
-        return currentSyntaxUnitIndexInSyntaxUnitsList;
-    }
-
-    private int processPlusOrMinusOperation(int currentSyntaxUnitIndexInSyntaxUnitsList, List<SyntaxUnit> syntaxUnits) throws Exception {
-        SyntaxUnit currentSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList);
-        SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList + 1);
-        SyntaxUnit nextSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList + 2);
-
-        // todo to be implemented
-        if (currentSyntaxUnit instanceof Number && nextSyntaxUnit instanceof Number) {
-            double currentNumber = Double.parseDouble(currentSyntaxUnit.getValue());
-            double nextNumber = Double.parseDouble(nextSyntaxUnit.getValue());
-            double result = calculateResult(nextOperationAsSyntaxUnit.getValue(), currentNumber, nextNumber);
-            syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList, currentSyntaxUnitIndexInSyntaxUnitsList + 3).clear();
-
-            DecimalFormat decimalFormat = new DecimalFormat("#.##");
-            String resultAsString = decimalFormat.format(result).replaceAll(",", ".");
-            syntaxUnits.add(currentSyntaxUnitIndexInSyntaxUnitsList, new Number(0, resultAsString));
-            currentSyntaxUnitIndexInSyntaxUnitsList--;
-        } else if (currentSyntaxUnit instanceof Number) {
-            double currentNumber = Double.parseDouble(currentSyntaxUnit.getValue());
-
-            if (nextSyntaxUnit instanceof SyntaxContainer syntaxContainer) {
-                if (syntaxContainer instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
-                    SyntaxUnit syntaxUnitInsideLogicalBlock = logicalBlock.getSyntaxUnits().getFirst();
-                    syntaxUnits.set(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnitInsideLogicalBlock);
-                    currentSyntaxUnitIndexInSyntaxUnitsList--;
-                } else if (syntaxContainer instanceof LogicalBlock logicalBlock) {
-                    combineAdjacentSyntaxUnits(logicalBlock.getSyntaxUnits());
-                    if (logicalBlock.getSyntaxUnits().size() == 1) {
-                        currentSyntaxUnitIndexInSyntaxUnitsList--;
-                    }
-                } else {
-                    combineAdjacentSyntaxUnits(syntaxContainer.getSyntaxUnits());
-                }
-            } else {
-                if (currentNumber == 0) {
-                    switch (nextOperationAsSyntaxUnit.getValue()) {
-                        case "+" -> {
-                            syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList, currentSyntaxUnitIndexInSyntaxUnitsList + 2).clear();
-                            currentSyntaxUnitIndexInSyntaxUnitsList--;
-                        }
-                        case "-" -> {
-                            syntaxUnits.remove(currentSyntaxUnitIndexInSyntaxUnitsList);
-                            currentSyntaxUnitIndexInSyntaxUnitsList--;
-                        }
-                    }
-                }
-            }
-        } else if (nextSyntaxUnit instanceof Number) {
-            double nextNumber = Double.parseDouble(nextSyntaxUnit.getValue());
-            if (nextNumber == 0) {
-                syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList + 1, currentSyntaxUnitIndexInSyntaxUnitsList + 3).clear();
-                currentSyntaxUnitIndexInSyntaxUnitsList--;
-            }
-        }
-        // ----
-
-        return currentSyntaxUnitIndexInSyntaxUnitsList;
-    }
-
-    // *
-    private int processMultiplicationOperationWithSyntaxUnits(int currentSyntaxUnitIndexInSyntaxUnitsList, List<SyntaxUnit> syntaxUnits) {
-        if (currentSyntaxUnitIndexInSyntaxUnitsList - 2 >= 0) {
-            SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList - 1);
-
-            if (!previousOperationAsSyntaxUnit.getValue().equals("/")) {
-                currentSyntaxUnitIndexInSyntaxUnitsList = processMultiplicationOperation(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-            }
-        } else {
-            currentSyntaxUnitIndexInSyntaxUnitsList = processMultiplicationOperation(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-        }
-        return currentSyntaxUnitIndexInSyntaxUnitsList;
-    }
-
-    private int processMultiplicationOperation(int currentSyntaxUnitIndexInSyntaxUnitsList, List<SyntaxUnit> syntaxUnits) {
-        SyntaxUnit currentSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList);
-        SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList + 1);
-        SyntaxUnit nextSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList + 2);
-
-        // todo to be implemented
-        if (currentSyntaxUnit instanceof Number && nextSyntaxUnit instanceof Number) {
-            double currentNumber = Double.parseDouble(currentSyntaxUnit.getValue());
-            double nextNumber = Double.parseDouble(nextSyntaxUnit.getValue());
-            double result = calculateResult(nextOperationAsSyntaxUnit.getValue(), currentNumber, nextNumber);
-            syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList, currentSyntaxUnitIndexInSyntaxUnitsList + 3).clear();
-
-            DecimalFormat decimalFormat = new DecimalFormat("#.##");
-            String resultAsString = decimalFormat.format(result).replaceAll(",", ".");
-            syntaxUnits.add(currentSyntaxUnitIndexInSyntaxUnitsList, new Number(0, resultAsString));
-            currentSyntaxUnitIndexInSyntaxUnitsList--;
-        } else if (currentSyntaxUnit instanceof Number) {
-            if (nextSyntaxUnit instanceof SyntaxContainer) {
-
-            } else {
-                double currentNumber = Double.parseDouble(currentSyntaxUnit.getValue());
-                if (currentNumber == 0) {
-                    syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList + 1, currentSyntaxUnitIndexInSyntaxUnitsList + 3).clear();
-                    currentSyntaxUnitIndexInSyntaxUnitsList--;
-                } else if (currentNumber == 1) {
-                    syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList, currentSyntaxUnitIndexInSyntaxUnitsList + 2).clear();
-                    currentSyntaxUnitIndexInSyntaxUnitsList--;
-                }
-            }
-        } else if (nextSyntaxUnit instanceof Number) {
-            double nextNumber = Double.parseDouble(nextSyntaxUnit.getValue());
-            if (nextNumber == 0) {
-                syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList, currentSyntaxUnitIndexInSyntaxUnitsList + 2).clear();
-                currentSyntaxUnitIndexInSyntaxUnitsList--;
-            } else if (nextNumber == 1) {
-                syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList + 1, currentSyntaxUnitIndexInSyntaxUnitsList + 3).clear();
-                currentSyntaxUnitIndexInSyntaxUnitsList--;
-            }
-        }
-        // ----
-
-        return currentSyntaxUnitIndexInSyntaxUnitsList;
-    }
-
-    // /
-    private int processDivisionOperationWithSyntaxUnits(int currentSyntaxUnitIndexInSyntaxUnitsList, List<SyntaxUnit> syntaxUnits) throws Exception {
-        if (currentSyntaxUnitIndexInSyntaxUnitsList - 2 >= 0) {
-            SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList - 1);
-
-            if (!previousOperationAsSyntaxUnit.getValue().matches("[*/]")) {
-                currentSyntaxUnitIndexInSyntaxUnitsList = processDivisionOperation(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-            }
-        } else {
-            currentSyntaxUnitIndexInSyntaxUnitsList = processDivisionOperation(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnits);
-        }
-        return currentSyntaxUnitIndexInSyntaxUnitsList;
-    }
-
-    private int processDivisionOperation(int currentSyntaxUnitIndexInSyntaxUnitsList, List<SyntaxUnit> syntaxUnits) throws Exception {
-        SyntaxUnit currentSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList);
-        SyntaxUnit nextOperationAsSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList + 1);
-        SyntaxUnit nextSyntaxUnit = syntaxUnits.get(currentSyntaxUnitIndexInSyntaxUnitsList + 2);
-
-        // todo to be implemented
-        if (currentSyntaxUnit instanceof Number && nextSyntaxUnit instanceof Number) {
-            double currentNumber = Double.parseDouble(currentSyntaxUnit.getValue());
-            double nextNumber = Double.parseDouble(nextSyntaxUnit.getValue());
-            if (nextNumber != 0) {
-                double result = calculateResult(nextOperationAsSyntaxUnit.getValue(), currentNumber, nextNumber);
-                syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList, currentSyntaxUnitIndexInSyntaxUnitsList + 3).clear();
-
-                DecimalFormat decimalFormat = new DecimalFormat("#.##");
-                String resultAsString = decimalFormat.format(result).replaceAll(",", ".");
-                syntaxUnits.add(currentSyntaxUnitIndexInSyntaxUnitsList, new Number(0, resultAsString));
-                currentSyntaxUnitIndexInSyntaxUnitsList--;
-            }
-        } else if (currentSyntaxUnit instanceof Number) {
-            if (nextSyntaxUnit instanceof SyntaxContainer syntaxContainer) {
-                if (syntaxContainer instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
-                    SyntaxUnit syntaxUnitInsideLogicalBlock = logicalBlock.getSyntaxUnits().getFirst();
-                    syntaxUnits.set(currentSyntaxUnitIndexInSyntaxUnitsList, syntaxUnitInsideLogicalBlock);
-                    currentSyntaxUnitIndexInSyntaxUnitsList--;
-                } else if (syntaxContainer instanceof LogicalBlock logicalBlock) {
-                    combineAdjacentSyntaxUnits(logicalBlock.getSyntaxUnits());
-                    if (logicalBlock.getSyntaxUnits().size() == 1) {
-                        currentSyntaxUnitIndexInSyntaxUnitsList--;
-                    }
-                } else {
-                    combineAdjacentSyntaxUnits(syntaxContainer.getSyntaxUnits());
-                }
-            } else {
-                double currentNumber = Double.parseDouble(currentSyntaxUnit.getValue());
-                if (currentNumber == 0) {
-                    syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList + 1, currentSyntaxUnitIndexInSyntaxUnitsList + 3).clear();
-                    currentSyntaxUnitIndexInSyntaxUnitsList--;
-                } else if (currentNumber == 1) {
-                    syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList, currentSyntaxUnitIndexInSyntaxUnitsList + 2).clear();
-                    currentSyntaxUnitIndexInSyntaxUnitsList--;
-                }
-            }
-        } else if (nextSyntaxUnit instanceof Number) {
-            double nextNumber = Double.parseDouble(nextSyntaxUnit.getValue());
-            if (nextNumber == 1) {
-                syntaxUnits.subList(currentSyntaxUnitIndexInSyntaxUnitsList + 1, currentSyntaxUnitIndexInSyntaxUnitsList + 3).clear();
-                currentSyntaxUnitIndexInSyntaxUnitsList--;
-            }
-        }
-        // ----
-
-        return currentSyntaxUnitIndexInSyntaxUnitsList;
-    }
-
+    // helping methods
     private double calculateResult(String operation, double currentNumber, double nextNumber) {
         return switch (operation) {
             case "+" -> currentNumber + nextNumber;
