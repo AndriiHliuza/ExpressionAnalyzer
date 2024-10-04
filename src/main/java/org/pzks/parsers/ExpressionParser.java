@@ -84,12 +84,12 @@ public class ExpressionParser {
                 List<Integer> errorsPositions = errors.stream()
                         .map(SyntaxUnitErrorMessageBuilder::getErrorPosition)
                         .toList();
-                HeadlinePrinter.print("Errors", Color.RED);
+                HeadlinePrinter.print("Syntax analysis results [Errors]", Color.RED);
                 SyntaxUnitStructurePrinter.printExpressionWithErrorsPointing(expression, errorsPositions);
             } else {
-                HeadlinePrinter.print("Success", Color.GREEN);
-                System.out.println(Color.GREEN.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + expression);
-                System.out.println(Color.GREEN.getAnsiValue() + "Expression is valid" + Color.DEFAULT.getAnsiValue());
+                HeadlinePrinter.print("Syntax analysis results [Success]", Color.GREEN);
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + expression);
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "valid");
             }
             errors.forEach(System.out::println);
         }
@@ -101,10 +101,10 @@ public class ExpressionParser {
         if (fixExpression) {
             HeadlinePrinter.print("Syntax corrections", Color.GREEN);
             new ExpressionFixer(parsedSyntaxUnit.getSyntaxUnits()).fix();
-            System.out.println(Color.GREEN.getAnsiValue() + "Original expression: " + Color.DEFAULT.getAnsiValue() + expression);
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Original expression: " + Color.DEFAULT.getAnsiValue() + expression);
             String fixedExpression = SyntaxUnitStructurePrinter.getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
-            System.out.println(Color.GREEN.getAnsiValue() + "Corrected expression: " + Color.DEFAULT.getAnsiValue() + fixedExpression);
-            System.out.println(Color.GREEN.getAnsiValue() + "Is corrected: " + Color.DEFAULT.getAnsiValue() + !expression.replaceAll("\\s+", "").equals(fixedExpression));
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Corrected expression: " + Color.DEFAULT.getAnsiValue() + fixedExpression);
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is corrected: " + Color.DEFAULT.getAnsiValue() + !expression.replaceAll("\\s+", "").equals(fixedExpression));
 
             parsedSyntaxUnit = convertExpressionToParsedSyntaxUnit(fixedExpression);
         }
@@ -142,10 +142,10 @@ public class ExpressionParser {
     private void printSimplifiedExpression(SyntaxUnit syntaxUnit, String baseExpression, boolean printSimplifiedExpression) {
         if (printSimplifiedExpression) {
             HeadlinePrinter.print("Simplifications", Color.GREEN);
-            System.out.println(Color.GREEN.getAnsiValue() + "Original expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Original expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
             String simplifiedExpression = SyntaxUnitStructurePrinter.getExpressionAsString(syntaxUnit.getSyntaxUnits());
-            System.out.println(Color.GREEN.getAnsiValue() + "Simplified expression: " + Color.DEFAULT.getAnsiValue() + simplifiedExpression);
-            System.out.println(Color.GREEN.getAnsiValue() + "Is simplified: " + Color.DEFAULT.getAnsiValue() + !baseExpression.replaceAll("\\s+", "").equals(simplifiedExpression));
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Simplified expression: " + Color.DEFAULT.getAnsiValue() + simplifiedExpression);
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is simplified: " + Color.DEFAULT.getAnsiValue() + !baseExpression.replaceAll("\\s+", "").equals(simplifiedExpression));
         }
     }
 }
