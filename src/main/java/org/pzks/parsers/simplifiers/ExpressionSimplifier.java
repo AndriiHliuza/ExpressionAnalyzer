@@ -344,7 +344,7 @@ public class ExpressionSimplifier {
         String expression = SyntaxUnitStructurePrinter.getExpressionAsString(syntaxUnits);
 
         BasicExpressionSimplifier basicExpressionSimplifier = new BasicExpressionSimplifier(expression);
-        expression = basicExpressionSimplifier.simplifyOnes().simplifyZeros().getExpression();
+        expression = basicExpressionSimplifier.simplifyOnes().simplifyZeros().removePlusAtTheBeginningOfTheLogicalBlockOrExpression().getExpression();
 
         SyntaxUnit syntaxUnit = new ExpressionParser().convertExpressionToParsedSyntaxUnit(expression);
         syntaxUnits.clear();

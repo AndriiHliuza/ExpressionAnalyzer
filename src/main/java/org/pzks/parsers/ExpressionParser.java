@@ -35,6 +35,7 @@ public class ExpressionParser {
             boolean isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit, printTreeOfFixedAndSimplifiedExpression);
             if (!isArithmeticErrorsPresent) {
                 printSimplifiedExpression(parsedSyntaxUnit, value, printTreeOfFixedAndSimplifiedExpression);
+                SyntaxUnitStructurePrinter.printTreeWithHeadline(true, false, parsedSyntaxUnit, "Simplified expression tree");
             }
         }
 

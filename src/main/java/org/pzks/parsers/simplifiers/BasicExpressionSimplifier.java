@@ -58,4 +58,10 @@ public class BasicExpressionSimplifier {
         expression = expression.replaceAll("(\\d+)\\.0+", "$1");
         return this;
     }
+
+    public BasicExpressionSimplifier removePlusAtTheBeginningOfTheLogicalBlockOrExpression() {
+        expression = expression.replaceAll("^\\+", "");
+        expression = expression.replaceAll("(?<=\\()\\+", "");
+        return this;
+    }
 }
