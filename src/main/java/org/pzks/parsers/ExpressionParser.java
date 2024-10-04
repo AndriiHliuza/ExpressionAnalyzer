@@ -1,6 +1,8 @@
 package org.pzks.parsers;
 
 import org.pzks.fixers.ExpressionFixer;
+import org.pzks.parsers.simplifiers.BasicExpressionSimplifier;
+import org.pzks.parsers.simplifiers.ExpressionSimplifier;
 import org.pzks.units.SyntaxUnit;
 import org.pzks.utils.Color;
 import org.pzks.utils.HeadlinePrinter;
@@ -112,6 +114,7 @@ public class ExpressionParser {
     private SyntaxUnit simplifyExpression(SyntaxUnit parsedSyntaxUnit) throws Exception {
         new ExpressionSimplifier(parsedSyntaxUnit.getSyntaxUnits()).simplify();
         String simplifiedExpression = SyntaxUnitStructurePrinter.getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
+        simplifiedExpression = new BasicExpressionSimplifier(simplifiedExpression).removeUnnecessaryZerosAfterDotInNumbers().getExpression();
         parsedSyntaxUnit = convertExpressionToParsedSyntaxUnit(simplifiedExpression);
         return parsedSyntaxUnit;
     }
