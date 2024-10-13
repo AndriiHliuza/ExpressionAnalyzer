@@ -17,8 +17,16 @@ public class Function extends SyntaxContainer {
         for (int i = 0; i < getBodyUnits().size(); i++) {
             String functionLogicalUnit = getBodyUnits().get(i);
             if (functionLogicalUnit.equals(",")) {
-                functionParams.add(new ArrayList<>(functionParameterValues));
-                functionParameterValues.clear();
+                int numberOfOpeningParenthesis = Collections.frequency(functionParameterValues, "(");
+                int numberOfClosingParenthesis = Collections.frequency(functionParameterValues, ")");
+
+                if (numberOfOpeningParenthesis == numberOfClosingParenthesis) {
+                    functionParams.add(new ArrayList<>(functionParameterValues));
+                    functionParameterValues.clear();
+                } else {
+                    functionParameterValues.add(functionLogicalUnit);
+                }
+
                 if (i == getBodyUnits().size() - 1) {
                     functionParams.add(new ArrayList<>());
                 }

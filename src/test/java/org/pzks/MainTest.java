@@ -63,7 +63,10 @@ class MainTest {
         String test3 = "0*c6*0+11*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31/0+9-p(a)/(g4*U)*5*81.8-4.2*34-z2/(5-5/((4-4)+1)))*6)*b(b(6/7/2325))";
         String test4 = "-5*5+(+s)";
         String test5 = "5+(+s)";
-        String test6 = "c6+442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/7/2325))";
+        String test6 = "c6+442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/7/2325,a+d, a*b/c*d/e*f, a*b/c/d/e*f))+c+a*g+(d-45)+(3-d+(d+e+v/w)+4*g)+a/b/c/d/e/f+a-b-c-d-e-f";
+        String test7 = "c + a * g + (d - 45) + (3 - d + (d+e+v/w) + 4 * g)";
+        String test8 = "p(b(a,d),f)";
+        String test9 = "p(a,d)";
         new ExpressionParser().parse(test6, true, true, true, true, true);
 
 
