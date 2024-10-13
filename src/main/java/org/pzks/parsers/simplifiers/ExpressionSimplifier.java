@@ -4,24 +4,33 @@ import org.pzks.parsers.ExpressionParser;
 import org.pzks.units.*;
 import org.pzks.units.Number;
 import org.pzks.utils.ArithmeticUtils;
-import org.pzks.utils.SyntaxUnitStructurePrinter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ExpressionSimplifier {
     private final List<SyntaxUnit> syntaxUnits;
 
-    public ExpressionSimplifier(List<SyntaxUnit> syntaxUnits) {
-        this.syntaxUnits = syntaxUnits;
+    public ExpressionSimplifier(SyntaxUnit syntaxUnit) throws Exception {
+        this.syntaxUnits = syntaxUnit.getSyntaxUnits();
+        simplify();
     }
 
-    public List<SyntaxUnit> getSyntaxUnits() {
-        return syntaxUnits;
+    public ExpressionSimplifier(List<SyntaxUnit> syntaxUnits) throws Exception {
+        this.syntaxUnits = syntaxUnits;
+        simplify();
+    }
+
+    public SyntaxUnit getSimplifiedSyntaxUnit() throws Exception {
+        return ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
     }
 
     public void simplify() throws Exception {
         combineAdjacentSyntaxUnits(syntaxUnits);
+        String simplifiedExpression = ExpressionParser.getExpressionAsString(this.syntaxUnits);
+        simplifiedExpression = new BasicExpressionSimplifier(simplifiedExpression).removeUnnecessaryZerosAfterDotInNumbers().getExpression();
+        SyntaxUnit simplifiedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(simplifiedExpression);
+        this.syntaxUnits.clear();
+        this.syntaxUnits.addAll(simplifiedSyntaxUnit.getSyntaxUnits());
     }
 
     private void combineAdjacentSyntaxUnits(List<SyntaxUnit> syntaxUnits) throws Exception {
@@ -341,12 +350,12 @@ public class ExpressionSimplifier {
 
     // simple units simplifications
     private void simplifySimpleUnits(List<SyntaxUnit> syntaxUnits) throws Exception {
-        String expression = SyntaxUnitStructurePrinter.getExpressionAsString(syntaxUnits);
+        String expression = ExpressionParser.getExpressionAsString(syntaxUnits);
 
         BasicExpressionSimplifier basicExpressionSimplifier = new BasicExpressionSimplifier(expression);
         expression = basicExpressionSimplifier.simplifyOnes().simplifyZeros().removePlusAtTheBeginningOfTheLogicalBlockOrExpression().getExpression();
 
-        SyntaxUnit syntaxUnit = new ExpressionParser().convertExpressionToParsedSyntaxUnit(expression);
+        SyntaxUnit syntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(expression);
         syntaxUnits.clear();
         syntaxUnits.addAll(syntaxUnit.getSyntaxUnits());
     }

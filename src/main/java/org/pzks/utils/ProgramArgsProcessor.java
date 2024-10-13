@@ -26,27 +26,15 @@ public class ProgramArgsProcessor {
                 System.out.println((i + 1) + ") " + programKey.getValue());
                 System.out.println("Description: " + programKey.getDescription() + "\n");
             }
-            System.out.println("Please provide keys first. Expression should be the last argument provided");
+            System.out.println("Note: Expression should be the last argument provided");
             isValidUsage = false;
         } else {
             isValidUsage = true;
         }
     }
 
-    public boolean shouldBuildTree() {
+    public boolean shouldShowExpressionTrees() {
         return programKeys.contains(ProgramKey.TREE.getValue());
-    }
-
-    public boolean shouldCheckForErrors() {
-        return programKeys.contains(ProgramKey.CHECK.getValue());
-    }
-
-    public boolean shouldMakeFixes() {
-        return programKeys.contains(ProgramKey.FIX.getValue());
-    }
-
-    public boolean shouldBuildFixedAndSimplifiedExpressionTree() {
-        return programKeys.contains(ProgramKey.FIXED_TREE.getValue());
     }
 
     public boolean shouldBuildParallelCalculationTree() {

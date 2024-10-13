@@ -12,7 +12,7 @@ public class SyntaxContainerFixer extends SyntaxUnitFixer {
     }
 
     @Override
-    public void fix() {
+    public void fix() throws Exception {
         if (getCurrentSyntaxUnit() == null) {
             getSyntaxUnits().remove(getCurrentSyntaxUnit());
             setSyntaxUnitRemovedFromSyntaxUnits(true);
@@ -27,7 +27,7 @@ public class SyntaxContainerFixer extends SyntaxUnitFixer {
         processCompatibilityWithPreviousSyntaxUnit(isContainerRemoved);
     }
 
-    private boolean checkIsContainerEmptyAndForRemoval(SyntaxContainer syntaxContainer) {
+    private boolean checkIsContainerEmptyAndForRemoval(SyntaxContainer syntaxContainer) throws Exception {
         boolean isContainerRemoved = false;
         if (syntaxContainer.getSyntaxUnits().isEmpty() && syntaxContainer instanceof LogicalBlock) {
             getSyntaxUnits().remove(getCurrentSyntaxUnit());
@@ -40,7 +40,8 @@ public class SyntaxContainerFixer extends SyntaxUnitFixer {
                 setSyntaxUnitRemovedFromSyntaxUnits(true);
                 isContainerRemoved = true;
             } else {
-                new ExpressionFixer(functionParam.getSyntaxUnits()).fix();
+                ExpressionFixer expressionFixer = new ExpressionFixer(functionParam);
+                functionParam.setSyntaxUnits(expressionFixer.getFixedSyntaxUnit().getSyntaxUnits());
                 if (functionParam.getSyntaxUnits().isEmpty()) {
                     getSyntaxUnits().remove(getCurrentSyntaxUnit());
                     setSyntaxUnitRemovedFromSyntaxUnits(true);
@@ -48,7 +49,8 @@ public class SyntaxContainerFixer extends SyntaxUnitFixer {
                 }
             }
         } else {
-            new ExpressionFixer(syntaxContainer.getSyntaxUnits()).fix();
+            ExpressionFixer expressionFixer = new ExpressionFixer(syntaxContainer);
+            syntaxContainer.setSyntaxUnits(expressionFixer.getFixedSyntaxUnit().getSyntaxUnits());
             if (syntaxContainer.getSyntaxUnits().isEmpty() && syntaxContainer instanceof LogicalBlock) {
                 getSyntaxUnits().remove(getCurrentSyntaxUnit());
                 setSyntaxUnitRemovedFromSyntaxUnits(true);

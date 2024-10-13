@@ -67,7 +67,7 @@ class MainTest {
         String test7 = "c + a * g + (d - 45) + (3 - d + (d+e+v/w) + 4 * g)";
         String test8 = "p(b(a,d),f)";
         String test9 = "p(a,d)";
-        new ExpressionParser().parse(test6, true, true, true, true, true);
+        ExpressionParser.parse(test6, true, true);
 
 
 //        int a = 2;

@@ -55,5 +55,5 @@ public abstract class SyntaxUnitFixer {
         isSyntaxUnitRemovedFromSyntaxUnits = syntaxUnitRemoverFromSyntaxUnits;
     }
 
-    public abstract void fix();
+    public abstract void fix() throws Exception;
 }

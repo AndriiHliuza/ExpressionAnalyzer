@@ -1,5 +1,6 @@
 package org.pzks.fixers;
 
+import org.pzks.parsers.ExpressionParser;
 import org.pzks.units.*;
 import org.pzks.units.Number;
 
@@ -8,11 +9,21 @@ import java.util.List;
 public class ExpressionFixer {
     private final List<SyntaxUnit> syntaxUnits;
 
-    public ExpressionFixer(List<SyntaxUnit> syntaxUnits) {
-        this.syntaxUnits = syntaxUnits;
+    public ExpressionFixer(SyntaxUnit syntaxUnit) throws Exception {
+        this.syntaxUnits = syntaxUnit.getSyntaxUnits();
+        fix();
     }
 
-    public void fix() {
+    public ExpressionFixer(List<SyntaxUnit> syntaxUnits) throws Exception {
+        this.syntaxUnits = syntaxUnits;
+        fix();
+    }
+
+    public SyntaxUnit getFixedSyntaxUnit() throws Exception {
+        return ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
+    }
+
+    private void fix() throws Exception {
         removeUnknownSyntaxUnitsOrSpaces(syntaxUnits);
         createValidExpression();
     }
@@ -31,7 +42,7 @@ public class ExpressionFixer {
         }
     }
 
-    private void createValidExpression() {
+    private void createValidExpression() throws Exception {
         for (int i = 0; i < syntaxUnits.size(); i++) {
 
             SyntaxUnit syntaxUnit = syntaxUnits.get(i);

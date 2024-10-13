@@ -9,12 +9,9 @@ public class Main {
         ProgramArgsProcessor programArgsProcessor = new ProgramArgsProcessor(args);
 
         if (programArgsProcessor.isValidUsage()) {
-            new ExpressionParser().parse(
+            ExpressionParser.parse(
                     programArgsProcessor.getExpression(),
-                    programArgsProcessor.shouldBuildTree(),
-                    programArgsProcessor.shouldCheckForErrors(),
-                    programArgsProcessor.shouldMakeFixes(),
-                    programArgsProcessor.shouldBuildFixedAndSimplifiedExpressionTree(),
+                    programArgsProcessor.shouldShowExpressionTrees(),
                     programArgsProcessor.shouldBuildParallelCalculationTree()
             );
         }

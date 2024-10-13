@@ -1,13 +1,11 @@
 package org.pzks.utils;
 
-import org.pzks.units.FunctionParam;
-import org.pzks.units.SyntaxContainer;
 import org.pzks.units.SyntaxUnit;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SyntaxUnitStructurePrinter {
+public class SyntaxUnitMetaDataPrinter {
 
     private static final StringBuilder spaceBuilder = new StringBuilder();
 
@@ -28,18 +26,12 @@ public class SyntaxUnitStructurePrinter {
         if (printTree) {
             HeadlinePrinter.print(headline, Color.CYAN);
             List<SyntaxUnit> syntaxUnits = parsedSyntaxUnit.getSyntaxUnits();
-            SyntaxUnitStructurePrinter.printTree(syntaxUnits, includeDetails);
+            SyntaxUnitMetaDataPrinter.printTree(syntaxUnits, includeDetails);
         }
     }
 
-    public static String getExpressionAsString(List<SyntaxUnit> syntaxUnits) {
-        StringBuilder expression = new StringBuilder();
-        addSyntaxUnitsToString(syntaxUnits, expression);
-        return expression.toString().replaceAll("\\s+", "");
-    }
-
     public static void printExpressionWithErrorsPointing(String expression, List<Integer> errorsPositions) {
-        System.out.println(Color.RED.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + expression);
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + expression);
 
         List<StringBuilder> errorLines = new ArrayList<>();
         errorLines.add(new StringBuilder(" ".repeat(expression.length() + 1)));
@@ -66,32 +58,5 @@ public class SyntaxUnitStructurePrinter {
             }
         }
         System.out.println();
-    }
-
-    private static void addSyntaxUnitsToString(List<SyntaxUnit> syntaxUnits, StringBuilder expression) {
-        for (int i = 0; i < syntaxUnits.size(); i++) {
-            SyntaxUnit syntaxUnit = syntaxUnits.get(i);
-            if (syntaxUnit instanceof SyntaxContainer syntaxContainer) {
-                if (syntaxContainer instanceof FunctionParam functionParam) {
-                    addSyntaxUnitsToString(functionParam.getSyntaxUnits(), expression);
-                    if (i != syntaxUnits.size() - 1) {
-                        expression.append(",");
-                    }
-                } else {
-                    String openingBracket = syntaxContainer.getDetails().get("openingBracket");
-                    String closingBracket = syntaxContainer.getDetails().get("closingBracket");
-                    String functionName = "";
-                    String name = syntaxContainer.getDetails().get("name");
-                    if (name != null) {
-                        functionName += name;
-                    }
-                    expression.append(functionName).append(openingBracket);
-                    addSyntaxUnitsToString(syntaxContainer.getSyntaxUnits(), expression);
-                    expression.append(closingBracket);
-                }
-            } else {
-                expression.append(syntaxUnit.getValue());
-            }
-        }
     }
 }
