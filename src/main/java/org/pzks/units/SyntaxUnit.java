@@ -23,6 +23,8 @@ public class SyntaxUnit implements SyntaxUnitParser, SyntaxErrorsAnalyzer, Arith
     private final BasicExpressionUnitRecognizer basicExpressionUnitRecognizer = new BasicExpressionUnitRecognizer();
     private final SyntaxUnitBuilderFactory syntaxUnitBuilderFactory = new SyntaxUnitBuilderFactory();
 
+    public SyntaxUnit() {}
+
     public SyntaxUnit(int index, List<String> units) {
         this.index = index;
         logicalUnits = units;

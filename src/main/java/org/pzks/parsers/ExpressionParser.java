@@ -1,7 +1,8 @@
 package org.pzks.parsers;
 
 import org.pzks.fixers.ExpressionFixer;
-import org.pzks.parsers.optimizers.ExpressionOptimizer;
+import org.pzks.parsers.parallelization.ParallelExpressionTreeBuilder;
+import org.pzks.utils.trees.TreeNode;
 import org.pzks.parsers.simplifiers.ExpressionSimplifier;
 import org.pzks.units.FunctionParam;
 import org.pzks.units.SyntaxContainer;
@@ -10,6 +11,7 @@ import org.pzks.utils.Color;
 import org.pzks.utils.HeadlinePrinter;
 import org.pzks.utils.SyntaxUnitErrorMessageBuilder;
 import org.pzks.utils.SyntaxUnitMetaDataPrinter;
+import org.pzks.utils.trees.TreeSerializer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,27 +23,40 @@ public class ExpressionParser {
             boolean printTrees,
             boolean buildParallelCalculationTree
     ) throws Exception {
-        SyntaxUnit parsedSyntaxUnit = convertExpressionToParsedSyntaxUnit(value);
+        if (value.isBlank()) {
+            System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + "\"" + " ".repeat(value.length()) + "\"");
+            System.out.println(Color.RED.getAnsiValue() + "Error: " + Color.DEFAULT.getAnsiValue() + "Can't proceed with calculations. There is no expression or it contains only white spaces!");
+        } else {
+            SyntaxUnit parsedSyntaxUnit = convertExpressionToParsedSyntaxUnit(value);
 
-        System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);
-        SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Expression Tree");
+            System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);
+            SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Expression Tree");
 
-        boolean isExpressionValid = calculateAndShowErrors(value, parsedSyntaxUnit);
-        parsedSyntaxUnit = fixExpression(value, parsedSyntaxUnit);
+            boolean isExpressionValid = calculateAndShowErrors(value, parsedSyntaxUnit);
+            parsedSyntaxUnit = fixExpression(value, parsedSyntaxUnit);
 
-        if (isExpressionValid) {
-            parsedSyntaxUnit = simplifyExpression(parsedSyntaxUnit);
-            boolean isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
-            if (!isArithmeticErrorsPresent) {
-                printSimplifiedExpression(parsedSyntaxUnit, value);
-                SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Simplified expression tree");
+            if (isExpressionValid) {
+                parsedSyntaxUnit = simplifyExpression(parsedSyntaxUnit);
+                boolean isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
+                if (!isArithmeticErrorsPresent) {
+                    printSimplifiedExpression(parsedSyntaxUnit, value);
+                    SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Simplified expression tree");
 
-                ExpressionOptimizer expressionOptimizer = new ExpressionOptimizer(parsedSyntaxUnit.getSyntaxUnits());
+                    if (buildParallelCalculationTree) {
+                        ParallelExpressionTreeBuilder treeBuilder = new ParallelExpressionTreeBuilder(parsedSyntaxUnit);
+                        TreeNode rootNode = treeBuilder.getRootNode();
 
+                        HeadlinePrinter.print("Tree building info", Color.GREEN);
+                        boolean isSuccessfullySaved = TreeSerializer.safeToCurrentDirectory(rootNode);
+                        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "Tree was successfully build.");
+                        String messageUponSaving = isSuccessfullySaved ? "Tree was saved to 'tree.json' in the current directory." : "Oops, something went wrong. File wasn't saved.";
+                        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + messageUponSaving);
+                    }
+                }
             }
-        }
 
-        System.out.println();
+            System.out.println();
+        }
     }
 
     public static SyntaxUnit convertExpressionToParsedSyntaxUnit(String expression) throws Exception {
@@ -119,10 +134,10 @@ public class ExpressionParser {
             List<Integer> errorsPositions = errors.stream()
                     .map(SyntaxUnitErrorMessageBuilder::getErrorPosition)
                     .toList();
-            HeadlinePrinter.print("Syntax analysis results [Errors]", Color.RED);
+            HeadlinePrinter.print("Syntax analysis results", Color.RED);
             SyntaxUnitMetaDataPrinter.printExpressionWithErrorsPointing(expression, errorsPositions);
         } else {
-            HeadlinePrinter.print("Syntax analysis results [Success]", Color.GREEN);
+            HeadlinePrinter.print("Syntax analysis results", Color.GREEN);
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + expression);
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "valid");
         }

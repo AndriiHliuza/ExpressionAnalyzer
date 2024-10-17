@@ -67,7 +67,7 @@ public class SyntaxUnitsBasicSimplifier {
                                 if (syntaxUnitAsOperation.getValue().equals("+")) {
                                     syntaxUnits.set(i, secondSyntaxUnit);
                                 } else {
-                                    syntaxUnits.set(i, syntaxUnitAsOperation);
+                                    syntaxUnits.set(i, secondSyntaxUnit);
                                     syntaxUnits.addFirst(firstSyntaxUnit);
                                 }
                             } else {

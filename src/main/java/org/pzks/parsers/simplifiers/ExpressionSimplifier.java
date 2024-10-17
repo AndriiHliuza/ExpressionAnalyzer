@@ -27,7 +27,10 @@ public class ExpressionSimplifier {
     public void simplify() throws Exception {
         combineAdjacentSyntaxUnits(syntaxUnits);
         String simplifiedExpression = ExpressionParser.getExpressionAsString(this.syntaxUnits);
-        simplifiedExpression = new BasicExpressionSimplifier(simplifiedExpression).removeUnnecessaryZerosAfterDotInNumbers().getExpression();
+        simplifiedExpression = new BasicExpressionSimplifier(simplifiedExpression)
+                .removeUnnecessaryZerosAfterDotInNumbers()
+                .removeOuterBracketsForRootExpression()
+                .getExpression();
         SyntaxUnit simplifiedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(simplifiedExpression);
         this.syntaxUnits.clear();
         this.syntaxUnits.addAll(simplifiedSyntaxUnit.getSyntaxUnits());
@@ -67,12 +70,35 @@ public class ExpressionSimplifier {
                 if (decrementI) {
                     i--;
                 }
+            } else {
+                simplifyMultiplicationOrDivisionOnLogicalBlockIfPossible(syntaxUnits, i);
             }
         }
 
         removeUnnecessaryBracketsInLogicalBlocks(syntaxUnits);
         simplifySimpleUnits(syntaxUnits);
         SyntaxUnitsBasicSimplifier.processMultiplicationByNegativeOne(syntaxUnits);
+    }
+
+    private void simplifyMultiplicationOrDivisionOnLogicalBlockIfPossible(List<SyntaxUnit> syntaxUnits, int currentIndex) {
+        SyntaxUnit currentSyntaxUnit = syntaxUnits.get(currentIndex);
+        SyntaxUnit nextSyntaxUnit = syntaxUnits.get(currentIndex + 1);
+        if (nextSyntaxUnit instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 3) {
+            SyntaxUnit firstSyntaxUnitInLogicalBlock = logicalBlock.getSyntaxUnits().getFirst();
+            SyntaxUnit middleSyntaxUnitInLogicalBlock = logicalBlock.getSyntaxUnits().get(1);
+            SyntaxUnit lastSyntaxUnitInLogicalBlock = logicalBlock.getSyntaxUnits().getLast();
+
+            if (firstSyntaxUnitInLogicalBlock.getValue().equals("1") &&
+                    middleSyntaxUnitInLogicalBlock.getValue().equals("/")) {
+                if (currentSyntaxUnit.getValue().equals("*")) {
+                    currentSyntaxUnit.setValue("/");
+                    syntaxUnits.set(currentIndex + 1, lastSyntaxUnitInLogicalBlock);
+                } else if (currentSyntaxUnit.getValue().equals("/")) {
+                    currentSyntaxUnit.setValue("*");
+                    syntaxUnits.set(currentIndex + 1, lastSyntaxUnitInLogicalBlock);
+                }
+            }
+        }
     }
 
     private void removeUnnecessaryBracketsInLogicalBlocks(List<SyntaxUnit> syntaxUnits) {

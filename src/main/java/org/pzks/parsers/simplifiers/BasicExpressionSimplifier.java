@@ -64,4 +64,12 @@ public class BasicExpressionSimplifier {
         expression = expression.replaceAll("(?<=\\()\\+", "");
         return this;
     }
+
+    public BasicExpressionSimplifier removeOuterBracketsForRootExpression() {
+        if (expression.startsWith("(") && expression.endsWith(")")) {
+            expression = expression.replaceAll("^\\(", "");
+            expression = expression.replaceAll("\\)$", "");
+        }
+        return this;
+    }
 }

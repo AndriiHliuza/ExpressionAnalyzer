@@ -6,6 +6,11 @@ import java.util.stream.Collectors;
 
 public class LogicalBlock extends SyntaxContainer {
 
+    public LogicalBlock() {
+        getDetails().put("openingBracket", "(");
+        getDetails().put("closingBracket", ")");
+    }
+
     public LogicalBlock(int index, List<String> units) throws Exception {
         super(index, units, true);
     }

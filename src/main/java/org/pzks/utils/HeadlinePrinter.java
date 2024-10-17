@@ -8,6 +8,6 @@ public class HeadlinePrinter {
                 headline +
                 "-".repeat(10) +
                 Color.DEFAULT.getAnsiValue() +
-                "\n".repeat(1));
+                "\n");
     }
 }

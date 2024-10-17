@@ -5,7 +5,8 @@ public enum Color {
     RED("\u001b[31;1m"),
     CYAN("\u001b[36;1m"),
     GREEN("\u001b[32m"),
-    BRIGHT_MAGENTA("\u001b[35;1m");
+    BRIGHT_MAGENTA("\u001b[35;1m"),
+    YELLOW("\u001B[33m");
 
     private final String ansiValue;
 

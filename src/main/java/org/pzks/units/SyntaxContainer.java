@@ -8,6 +8,8 @@ public abstract class SyntaxContainer extends SyntaxUnit {
     private HashMap<String, String> details = new HashMap<>();
     private List<String> bodyUnits = new ArrayList<>();
 
+    public SyntaxContainer() {}
+
     public SyntaxContainer(int index, List<String> units, boolean shouldProcessDetails) throws Exception {
         super(index, units);
         if (shouldProcessDetails) {

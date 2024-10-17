@@ -2,13 +2,6 @@ package org.pzks;
 
 import org.pzks.parsers.ExpressionParser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 class MainTest {
     public static void main(String[] args) throws Exception {
         String testString1 = "((+!,11  .   442)(a23-+(tix2u39u9nyu08%, 93ux h3028i9i8  988.23.31 9 $!()p  (a,   ,)#    (*U@!)! #!@ @ #@*5. 81.8  .   4.2  34 -     )6)b(b  (/a/2325)(";
@@ -63,11 +56,46 @@ class MainTest {
         String test3 = "0*c6*0+11*442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31/0+9-p(a)/(g4*U)*5*81.8-4.2*34-z2/(5-5/((4-4)+1)))*6)*b(b(6/7/2325))";
         String test4 = "-5*5+(+s)";
         String test5 = "5+(+s)";
-        String test6 = "c6+442/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/7/2325,a+d, a*b/c*d/e*f, a*b/c/d/e*f))+c+a*g+(d-45)+(3-d+(d+e+v/w)+4*g)+a/b/c/d/e/f+a-b-c-d-e-f";
+        String test6 = "-c6+442/(-a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)*b(b(6/7/2325,a+d, a*b/c*d/e*f, a*b/c/d/e*f))+c+a*g+(d-45)+(3-d+(d+e+v/w)+4*g)+a/b/c/d/e/f+a-b-c-d-e-f";
         String test7 = "c + a * g + (d - 45) + (3 - d + (d+e+v/w) + 4 * g)";
         String test8 = "p(b(a,d),f)";
         String test9 = "p(a,d)";
-        ExpressionParser.parse(test6, true, true);
+        String test10 = "42/(a23-(tix2u39u9nyu08-93/ux*h3028i9i8/988.23+31+9-p(a)/(g4*U)*5*81.8-4.2*34-z2)*6)";
+        String test11 = "a+(-b)";
+        String test12= "p()";
+        String test13= "d+(-1/a)";
+        String test14= "(d+a)";
+        String test15= "d*(-5)";
+        String test16= "-c+a/s/(-5)/d+(-c+d)-e-f+(-g-h-4-j)+a*b";
+        String test17= "f+(-g-h-i-j)";
+        String test18= "-(-c)";
+        String test19= "(((a+b*((((c/d)))))))";
+        String test20= "d+(-1/(-c))";
+        String test21= "1/(1/(1/(a+b)))";
+        String test22= "1/(1/(1/(a+b))) +p()";
+        String test23= "     ";
+        String test24= "d+((-c)-r)";
+        String test25= "e+a*b+f/(-(c+d))+e";
+        String test26= "a-b";
+        ExpressionParser.parse(test16, false, true);
+
+//        DynamicList structureList = new DynamicList();
+//        structureList.add(new TreeNode());
+//        structureList.add(new DynamicList());
+//        DynamicList structureList1 = new DynamicList();
+//        structureList1.add(new TreeNode());
+//        structureList.add(structureList1);
+//        System.out.println(structureList);
+//
+//        System.out.println(new ArrayList<>());
+
+//        List<Object> objectList = new ArrayList<>();
+//        objectList.add(new TreeNode());
+//        objectList.add(new DynamicList());
+//        List<Object> objectList1 = new ArrayList<>();
+//        objectList1.add(new TreeNode());
+//        objectList.add(objectList1);
+//        System.out.println(objectList);
 
 
 //        int a = 2;
