@@ -1,13 +1,21 @@
 package org.pzks.utils.trees;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.pzks.utils.DynamicObject;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TreeNode implements DynamicObject {
     private String value;  // operation for level 2 and up | any other
+
+    @JsonProperty("left")
     private TreeNode leftChild;
+
+    @JsonProperty("right")
     private TreeNode rightChild;
+
+    @JsonIgnore
     private int level;
 
     public TreeNode() {}
@@ -29,6 +37,7 @@ public class TreeNode implements DynamicObject {
         this.level = level;
     }
 
+    @JsonIgnore
     public int getMaxHeight() {
         return getMaxHeight(this);
     }

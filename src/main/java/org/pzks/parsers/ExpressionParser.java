@@ -43,14 +43,7 @@ public class ExpressionParser {
                     SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Simplified expression tree");
 
                     if (buildParallelCalculationTree) {
-                        ParallelExpressionTreeBuilder treeBuilder = new ParallelExpressionTreeBuilder(parsedSyntaxUnit);
-                        TreeNode rootNode = treeBuilder.getRootNode();
-
-                        HeadlinePrinter.print("Tree building info", Color.GREEN);
-                        boolean isSuccessfullySaved = TreeSerializer.safeToCurrentDirectory(rootNode);
-                        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "Tree was successfully build.");
-                        String messageUponSaving = isSuccessfullySaved ? "Tree was saved to 'tree.json' in the current directory." : "Oops, something went wrong. File wasn't saved.";
-                        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + messageUponSaving);
+                        buildParallelCalculationTree(parsedSyntaxUnit);
                     }
                 }
             }
@@ -189,5 +182,16 @@ public class ExpressionParser {
         String simplifiedExpression = getExpressionAsString(syntaxUnit.getSyntaxUnits());
         System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Simplified expression: " + Color.DEFAULT.getAnsiValue() + simplifiedExpression);
         System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is simplified: " + Color.DEFAULT.getAnsiValue() + !baseExpression.replaceAll("\\s+", "").equals(simplifiedExpression));
+    }
+
+    private static void buildParallelCalculationTree(SyntaxUnit syntaxUnit) throws Exception {
+        ParallelExpressionTreeBuilder treeBuilder = new ParallelExpressionTreeBuilder(syntaxUnit);
+        TreeNode rootNode = treeBuilder.getRootNode();
+
+        HeadlinePrinter.print("Tree building info", Color.GREEN);
+        boolean isSuccessfullySaved = TreeSerializer.safeToCurrentDirectory(rootNode);
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "Tree was successfully build.");
+        String messageUponSaving = isSuccessfullySaved ? "Tree was saved to the 'tree.json' file in the current directory." : "Oops, something went wrong. File wasn't saved.";
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + messageUponSaving);
     }
 }

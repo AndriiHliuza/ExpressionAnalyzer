@@ -31,8 +31,7 @@ public class ParallelExpressionTreeBuilder {
             buildTree(treeNodeList);
             if (treeNodeList.size() == 1) {
                 rootNode = (TreeNode) treeNodeList.getFirst();
-
-
+                simplifyTree(rootNode);
             }
         } else {
             System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "The provided expression is not supported for building the parallel tree!");
@@ -52,39 +51,133 @@ public class ParallelExpressionTreeBuilder {
         }
     }
 
-    private TreeNode simplifyTree(TreeNode rootNode) { //todo to be implemented
-        String value = rootNode.getValue();
-        TreeNode leftChild = rootNode.getLeftChild();
-        TreeNode rightChild = rootNode.getRightChild();
+    private void simplifyTree(TreeNode treeNode) { //todo to be implemented
+        if (treeNode != null) {
+            String value = treeNode.getValue();
+            TreeNode leftChild = treeNode.getLeftChild();
+            TreeNode rightChild = treeNode.getRightChild();
 
-        switch (value) {
-            case "+" -> {
-                String leftChildValue = leftChild.getValue();
-                String rightChildValue = rightChild.getValue();
+            switch (value) {
+                case "+" -> {
+                    if (rightChild != null && rightChild.getValue().equals("*")) {
+                        TreeNode leftChildOfRightChild = rightChild.getLeftChild();
+                        TreeNode rightChildOfRightChild = rightChild.getRightChild();
 
-                if (leftChildValue.equals("-")) {
-                    if (leftChild.getLeftChild().getValue().equals("0")) {
-                        leftChild.setValue("-" + leftChild.getRightChild().getValue());
-                        leftChild.setLeftChild(null);
-                        leftChild.setRightChild(null);
+                        if (leftChildOfRightChild != null &&
+                                rightChildOfRightChild != null &&
+                                leftChild != null &&
+                                leftChildOfRightChild.getValue().equals("-1")) {
+                            treeNode.setValue("-");
+                            treeNode.setRightChild(rightChildOfRightChild);
+                        }
+                    } else if (leftChild != null && leftChild.getValue().equals("*")) {
+                        TreeNode leftChildOfLeftChild = leftChild.getLeftChild();
+                        TreeNode rightChildOfLeftChild = leftChild.getRightChild();
+
+                        if (leftChildOfLeftChild != null &&
+                                rightChildOfLeftChild != null &&
+                                rightChild != null &&
+                                leftChildOfLeftChild.getValue().equals("-1")) {
+                            treeNode.setValue("-");
+                            treeNode.setLeftChild(rightChild);
+                            treeNode.setRightChild(rightChildOfLeftChild);
+                        }
+                    } else if (rightChild != null && rightChild.getValue().equals("+")) {
+                        TreeNode leftChildOfRightChild = rightChild.getLeftChild();
+                        TreeNode rightChildOfRightChild = rightChild.getRightChild();
+
+                        if (leftChildOfRightChild != null &&
+                                rightChildOfRightChild != null &&
+                                leftChildOfRightChild.getValue().equals("*") &&
+                                rightChildOfRightChild.getValue().equals("*")) {
+                            TreeNode leftChildOfLeftChildOfRightChild = leftChildOfRightChild.getLeftChild();
+                            TreeNode rightChildOfLeftChildOfRightChild = leftChildOfRightChild.getRightChild();
+
+                            TreeNode leftChildOfRightChildOfRightChild = rightChildOfRightChild.getLeftChild();
+                            TreeNode rightChildOfRightChildOfRightChild = rightChildOfRightChild.getRightChild();
+
+                            if (leftChildOfLeftChildOfRightChild != null &&
+                                    rightChildOfLeftChildOfRightChild != null &&
+                                    leftChildOfRightChildOfRightChild != null &&
+                                    rightChildOfRightChildOfRightChild != null &&
+                                    leftChildOfLeftChildOfRightChild.getValue().equals("-1") &&
+                                    leftChildOfRightChildOfRightChild.getValue().equals("-1")) {
+                                treeNode.setValue("-");
+                                rightChild.setLeftChild(rightChildOfLeftChildOfRightChild);
+                                rightChild.setRightChild(rightChildOfRightChildOfRightChild);
+                            }
+                        }
                     }
                 }
+                case "*" -> {
+                    if (leftChild != null &&
+                            rightChild != null &&
+                            leftChild.getValue().equals("-1") &&
+                            rightChild.getValue().matches("\\w+")) {
+                        treeNode.setValue("-" + rightChild.getValue());
+                        treeNode.setLeftChild(null);
+                        treeNode.setRightChild(null);
+                    } else if (rightChild != null && rightChild.getValue().equals("/")) {
+                        TreeNode leftChildOfRightChild = rightChild.getLeftChild();
+                        TreeNode rightChildOfRightChild = rightChild.getRightChild();
 
-                if (rightChildValue.equals("-")) {
+                        if (leftChildOfRightChild != null &&
+                                rightChildOfRightChild != null &&
+                                leftChild != null &&
+                                leftChildOfRightChild.getValue().equals("1")) {
+                            treeNode.setValue("/");
+                            treeNode.setRightChild(rightChildOfRightChild);
+                        }
+                    } else if (leftChild != null && leftChild.getValue().equals("/")) {
+                        TreeNode leftChildOfLeftChild = leftChild.getLeftChild();
+                        TreeNode rightChildOfLeftChild = leftChild.getRightChild();
+
+                        if (leftChildOfLeftChild != null &&
+                                rightChildOfLeftChild != null &&
+                                rightChild != null &&
+                                leftChildOfLeftChild.getValue().equals("1")) {
+                            treeNode.setValue("/");
+                            treeNode.setLeftChild(rightChild);
+                            treeNode.setRightChild(rightChildOfLeftChild);
+                        }
+                    } else if (rightChild != null && rightChild.getValue().equals("*")) {
+                        TreeNode leftChildOfRightChild = rightChild.getLeftChild();
+                        TreeNode rightChildOfRightChild = rightChild.getRightChild();
+
+                        if (leftChildOfRightChild != null &&
+                                rightChildOfRightChild != null &&
+                                leftChildOfRightChild.getValue().equals("/") &&
+                                rightChildOfRightChild.getValue().equals("/")) {
+                            TreeNode leftChildOfLeftChildOfRightChild = leftChildOfRightChild.getLeftChild();
+                            TreeNode rightChildOfLeftChildOfRightChild = leftChildOfRightChild.getRightChild();
+
+                            TreeNode leftChildOfRightChildOfRightChild = rightChildOfRightChild.getLeftChild();
+                            TreeNode rightChildOfRightChildOfRightChild = rightChildOfRightChild.getRightChild();
+
+                            if (leftChildOfLeftChildOfRightChild != null &&
+                                    rightChildOfLeftChildOfRightChild != null &&
+                                    leftChildOfRightChildOfRightChild != null &&
+                                    rightChildOfRightChildOfRightChild != null &&
+                                    leftChildOfLeftChildOfRightChild.getValue().equals("1") &&
+                                    leftChildOfRightChildOfRightChild.getValue().equals("1")) {
+                                treeNode.setValue("/");
+                                rightChild.setLeftChild(rightChildOfLeftChildOfRightChild);
+                                rightChild.setRightChild(rightChildOfRightChildOfRightChild);
+                            }
+                        }
+                    }
 
                 }
             }
-            case "-" -> {
 
+            if (treeNode.getLeftChild() != null) {
+                simplifyTree(treeNode.getLeftChild());
             }
-            case "*" -> {
 
-            }
-            case "/" -> {
-
+            if (treeNode.getRightChild() != null) {
+                simplifyTree(treeNode.getRightChild());
             }
         }
-        return null;
     }
 
     private List<String> getWarningsIfBuildingTheParallelTreeIsForbidden(List<SyntaxUnit> syntaxUnits) {

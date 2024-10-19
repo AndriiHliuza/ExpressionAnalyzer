@@ -77,6 +77,9 @@ class MainTest {
         String test24= "d+((-c)-r)";
         String test25= "e+a*b+f/(-(c+d))+e";
         String test26= "a-b";
+        String test27= "a/(-d)*b";
+        String test28= "-c-d";
+        String test29= "-5/d";
         ExpressionParser.parse(test16, false, true);
 
 //        DynamicList structureList = new DynamicList();
