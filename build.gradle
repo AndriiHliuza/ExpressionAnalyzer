@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'org.pzks'
@@ -22,10 +23,16 @@ test {
 }
 
 jar {
-    archiveFileName = 'expressionAnalyzer.jar'
+//    archiveFileName = 'expressionAnalyzer.jar'
     manifest {
         attributes(
                 'Main-Class': 'org.pzks.Main'
         )
     }
+}
+
+shadowJar {
+    archiveFileName = 'expressionAnalyzer.jar'  // Name of the fat JAR
+    archiveClassifier.set('')
+    archiveVersion.set('')  // Optional: omit version in the file name
 }
