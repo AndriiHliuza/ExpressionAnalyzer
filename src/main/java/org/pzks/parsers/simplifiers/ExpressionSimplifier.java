@@ -12,12 +12,25 @@ public class ExpressionSimplifier {
 
     public ExpressionSimplifier(SyntaxUnit syntaxUnit) throws Exception {
         this.syntaxUnits = syntaxUnit.getSyntaxUnits();
-        simplify();
+        String providedExpression;
+        String simplifiedExpression;
+        do {
+            providedExpression = ExpressionParser.getExpressionAsString(syntaxUnits);
+            simplify();
+            simplifiedExpression = ExpressionParser.getExpressionAsString(syntaxUnits);
+        } while (!simplifiedExpression.equals(providedExpression));
     }
 
     public ExpressionSimplifier(List<SyntaxUnit> syntaxUnits) throws Exception {
         this.syntaxUnits = syntaxUnits;
-        simplify();
+        String providedExpression;
+        String simplifiedExpression;
+        do {
+            providedExpression = ExpressionParser.getExpressionAsString(syntaxUnits);
+            simplify();
+            simplifiedExpression = ExpressionParser.getExpressionAsString(syntaxUnits);
+        } while (!simplifiedExpression.equals(providedExpression));
+
     }
 
     public SyntaxUnit getSimplifiedSyntaxUnit() throws Exception {
@@ -136,7 +149,18 @@ public class ExpressionSimplifier {
                         SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
                         SyntaxUnit nextOperationAfterNextNumberAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits + 3);
                         if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]") && nextOperationAfterNextNumberAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                            if (previousOperationAsSyntaxUnit.getValue().equals("-")) {
+                                previousOperationAsSyntaxUnit.setValue("+");
+                                currentNumberAsSyntaxUnit.setValue("-" + currentNumber);
+                                currentNumber = Double.parseDouble(currentNumberAsSyntaxUnit.getValue());
+                            }
                             double result = ArithmeticUtils.calculateResult(operationValue, currentNumber, nextNumber);
+
+                            if (result < 0) {
+                                previousOperationAsSyntaxUnit.setValue("-");
+                            }
+                            result = Math.abs(result);
+
                             syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
                             syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, ArithmeticUtils.convertDoubleToString(result)));
                             currentIndexInSyntaxUnits--;
@@ -144,7 +168,19 @@ public class ExpressionSimplifier {
                     } else if (currentIndexInSyntaxUnits - 2 >= 0) {
                         SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(currentIndexInSyntaxUnits - 1);
                         if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                            if (previousOperationAsSyntaxUnit.getValue().equals("-")) {
+                                previousOperationAsSyntaxUnit.setValue("+");
+                                currentNumberAsSyntaxUnit.setValue("-" + currentNumber);
+                                currentNumber = Double.parseDouble(currentNumberAsSyntaxUnit.getValue());
+                            }
                             double result = ArithmeticUtils.calculateResult(operationValue, currentNumber, nextNumber);
+
+                            if (result < 0) {
+                                previousOperationAsSyntaxUnit.setValue("-");
+                            }
+
+                            result = Math.abs(result);
+
                             syntaxUnits.subList(currentIndexInSyntaxUnits, currentIndexInSyntaxUnits + 3).clear();
                             syntaxUnits.add(currentIndexInSyntaxUnits, new Number(0, ArithmeticUtils.convertDoubleToString(result)));
                             currentIndexInSyntaxUnits--;
@@ -379,7 +415,12 @@ public class ExpressionSimplifier {
         String expression = ExpressionParser.getExpressionAsString(syntaxUnits);
 
         BasicExpressionSimplifier basicExpressionSimplifier = new BasicExpressionSimplifier(expression);
-        expression = basicExpressionSimplifier.simplifyOnes().simplifyZeros().removePlusAtTheBeginningOfTheLogicalBlockOrExpression().getExpression();
+        expression = basicExpressionSimplifier
+                .removeUnnecessaryZerosAfterDotInNumbers()
+                .simplifyOnes()
+                .simplifyZeros()
+                .removePlusAtTheBeginningOfTheLogicalBlockOrExpression()
+                .getExpression();
 
         SyntaxUnit syntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(expression);
         syntaxUnits.clear();

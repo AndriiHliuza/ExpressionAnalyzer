@@ -80,7 +80,12 @@ class MainTest {
         String test27= "a/(-d)*b";
         String test28= "-c-d";
         String test29= "-5/d";
-        ExpressionParser.parse(test16, false, true);
+        String test30= "-(-i)/1.0 + 0 - 0*k*h + 2 - 4.8/2 + 1*e/2";
+        String test31= "a*2/0 + b/(b+b*0-1*b) - 1/(c*2*4.76*(1-2+1))";
+        String test32= "i-5+3";
+        String test33= "-(-i)/1.0 + 0 - 0*k*h + 2 - 4.8/2 + 1*e/2";
+        String test34= "b+0";
+        ExpressionParser.parse(test34, false, true);
 
 //        DynamicList structureList = new DynamicList();
 //        structureList.add(new TreeNode());

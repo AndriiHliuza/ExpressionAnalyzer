@@ -53,6 +53,7 @@ public class ExpressionParser {
     }
 
     public static SyntaxUnit convertExpressionToParsedSyntaxUnit(String expression) throws Exception {
+        expression = expression.trim();
         List<String> logicalUnits = getLogicalUnits(expression);
         SyntaxUnit syntaxUnit = new SyntaxUnit(0, logicalUnits);
         SyntaxUnit parsedSyntaxUnit = syntaxUnit.parse();

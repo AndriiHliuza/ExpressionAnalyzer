@@ -1,5 +1,7 @@
 package org.pzks.utils;
 
+import java.text.DecimalFormat;
+
 public class ArithmeticUtils {
     public static double calculateResult(String operation, double currentNumber, double nextNumber) {
         return switch (operation) {
@@ -12,6 +14,9 @@ public class ArithmeticUtils {
     }
 
     public static String convertDoubleToString(double number) {
-        return String.valueOf(number);
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        String formattedNumber = decimalFormat.format(number);
+        return formattedNumber.replace(",", ".");
+//        return String.valueOf(number);
     }
 }
