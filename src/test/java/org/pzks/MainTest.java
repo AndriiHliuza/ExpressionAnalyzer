@@ -45,7 +45,6 @@ class MainTest {
         String testString37 = "(+0)*d"; // + and - zero works fine
         String testString38 = "d*((-0))"; // + and - zero works fine
 
-
         String testString39 = "(-1)*d()"; // + and - one works fine
         String testString40 = "d*(-1)"; // + and - one works fine
         String testString41 = "4*d()*(-1)"; // + and - one works fine
@@ -85,7 +84,14 @@ class MainTest {
         String test32= "i-5+3";
         String test33= "-(-i)/1.0 + 0 - 0*k*h + 2 - 4.8/2 + 1*e/2";
         String test34= "b+0";
-        ExpressionParser.parse(test34, false, true);
+        String test35= "a/b/c/d/(1/e)/f/g/h/k";
+        String test36= "a*b - b*c - c*d - a*c*(b-d/e/f/g) - (g - h) - (i-j)";
+        String test37= "a*b + (((-d)/(b*f)*c)*d)-g*h";
+        String test38= "a*b + (((-d)/b)*d)-g*h";
+        String test39= "(((-1)*b)*c)*k+f*g";
+        String test40= "(-1)*k+f*g";
+        String test41= "-(-i)/1.0 + 0 - 0*k*h + 2 - 4.8/2 + 1*e/2";
+        ExpressionParser.parse(test41, false, true);
 
 //        DynamicList structureList = new DynamicList();
 //        structureList.add(new TreeNode());

@@ -1,6 +1,7 @@
 package org.pzks.parsers;
 
 import org.pzks.fixers.ExpressionFixer;
+import org.pzks.parsers.optimizers.ExpressionParallelizationOptimizer;
 import org.pzks.parsers.parallelization.ParallelExpressionTreeBuilder;
 import org.pzks.utils.trees.TreeNode;
 import org.pzks.parsers.simplifiers.ExpressionSimplifier;
@@ -43,6 +44,7 @@ public class ExpressionParser {
                     SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Simplified expression tree");
 
                     if (buildParallelCalculationTree) {
+                        parsedSyntaxUnit = optimizeSyntaxUnit(parsedSyntaxUnit);
                         buildParallelCalculationTree(parsedSyntaxUnit);
                     }
                 }
@@ -183,6 +185,12 @@ public class ExpressionParser {
         String simplifiedExpression = getExpressionAsString(syntaxUnit.getSyntaxUnits());
         System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Simplified expression: " + Color.DEFAULT.getAnsiValue() + simplifiedExpression);
         System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is simplified: " + Color.DEFAULT.getAnsiValue() + !baseExpression.replaceAll("\\s+", "").equals(simplifiedExpression));
+    }
+
+
+    private static SyntaxUnit optimizeSyntaxUnit(SyntaxUnit syntaxUnit) throws Exception {
+        ExpressionParallelizationOptimizer expressionParallelizationOptimizer = new ExpressionParallelizationOptimizer(syntaxUnit);
+        return expressionParallelizationOptimizer.getOptimizedSyntaxUnit();
     }
 
     private static void buildParallelCalculationTree(SyntaxUnit syntaxUnit) throws Exception {

@@ -16,15 +16,11 @@ public class ParallelExpressionTreeBuilder {
     private TreeNode rootNode;
 
     public ParallelExpressionTreeBuilder(SyntaxUnit syntaxUnit) throws Exception {
-        ExpressionParallelizationOptimizer expressionParallelizationOptimizer = new ExpressionParallelizationOptimizer(syntaxUnit);
-        SyntaxUnit optimizedSyntaxUnit = expressionParallelizationOptimizer.getOptimizedSyntaxUnit();
+        SyntaxUnit convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnit.getSyntaxUnits()));
 
-        List<SyntaxUnit> syntaxUnits = optimizedSyntaxUnit.getSyntaxUnits();
-        SyntaxUnit convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
-
-        List<String> warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(syntaxUnits);
+        List<String> warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(convertedSyntaxUnit.getSyntaxUnits());
         if (warnings.isEmpty()) {
-            syntaxUnits = convertedSyntaxUnit.getSyntaxUnits();
+            List<SyntaxUnit> syntaxUnits = convertedSyntaxUnit.getSyntaxUnits();
             takeOutNumberFromLogicalBlocksWithOneElement(syntaxUnits);
 
             DynamicList treeNodeList = convertSyntaxUnitsToListOfTreeNodes(syntaxUnits);
@@ -32,6 +28,15 @@ public class ParallelExpressionTreeBuilder {
             if (treeNodeList.size() == 1) {
                 rootNode = (TreeNode) treeNodeList.getFirst();
                 simplifyTree(rootNode);
+
+                TreeNode providedTreeNode;
+                TreeNode simplifiedtreeNode;
+                do {
+                    providedTreeNode = rootNode.clone();
+                    simplifyTree(rootNode);
+                    simplifiedtreeNode = rootNode.clone();
+                } while (!providedTreeNode.equals(simplifiedtreeNode));
+
             }
         } else {
             System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "The provided expression is not supported for building the parallel tree!");
@@ -51,7 +56,7 @@ public class ParallelExpressionTreeBuilder {
         }
     }
 
-    private void simplifyTree(TreeNode treeNode) { //todo to be implemented
+    private void simplifyTree(TreeNode treeNode) {
         if (treeNode != null) {
             String value = treeNode.getValue();
             TreeNode leftChild = treeNode.getLeftChild();
@@ -59,16 +64,43 @@ public class ParallelExpressionTreeBuilder {
 
             switch (value) {
                 case "+" -> {
-                    if (rightChild != null && rightChild.getValue().equals("*")) {
+                    if (leftChild != null && rightChild != null &&
+                            leftChild.getValue().equals("*") && rightChild.getValue().equals("*")) {
+                        TreeNode leftChildOfLeftChild = leftChild.getLeftChild();
+                        TreeNode rightChildOfLeftChild = leftChild.getRightChild();
+
+                        TreeNode leftChildOfRightChild = rightChild.getLeftChild();
+                        TreeNode rightChildOfRightChild = rightChild.getRightChild();
+
+                        if (leftChildOfLeftChild != null && rightChildOfLeftChild != null &&
+                                leftChildOfRightChild != null && rightChildOfRightChild != null &&
+                                leftChildOfLeftChild.getValue().equals("-1") && leftChildOfRightChild.getValue().equals("-1")) {
+                            treeNode.setValue("*");
+                            treeNode.setLeftChild(new TreeNode("-1"));
+
+                            TreeNode newRightChild = new TreeNode("+");
+                            treeNode.setRightChild(newRightChild);
+
+                            newRightChild.setLeftChild(rightChildOfLeftChild);
+                            newRightChild.setRightChild(rightChildOfRightChild);
+                        } else if (leftChildOfRightChild != null &&
+                                rightChildOfRightChild != null &&
+                                leftChildOfRightChild.getValue().matches("\\*|/|(-1)")) {
+                            restructureTreeForOptimizedMinusOperationProcessingForRightChildOfTheCurrentTreeNode(treeNode, rightChild, leftChildOfRightChild, rightChildOfRightChild);
+                        } else if (leftChildOfLeftChild != null &&
+                                rightChildOfLeftChild != null   &&
+                                leftChildOfLeftChild.getValue().matches("\\*|/|(-1)")) {
+                            restructureTreeForOptimizedMinusOperationProcessingForLeftChildOfTheCurrentTreeNode(treeNode, leftChild, rightChild, leftChildOfLeftChild, rightChildOfLeftChild);
+                        }
+
+                    } else if (rightChild != null && rightChild.getValue().equals("*")) {
                         TreeNode leftChildOfRightChild = rightChild.getLeftChild();
                         TreeNode rightChildOfRightChild = rightChild.getRightChild();
 
                         if (leftChildOfRightChild != null &&
                                 rightChildOfRightChild != null &&
-                                leftChild != null &&
-                                leftChildOfRightChild.getValue().equals("-1")) {
-                            treeNode.setValue("-");
-                            treeNode.setRightChild(rightChildOfRightChild);
+                                leftChild != null) {
+                            restructureTreeForOptimizedMinusOperationProcessingForRightChildOfTheCurrentTreeNode(treeNode, rightChild, leftChildOfRightChild, rightChildOfRightChild);
                         }
                     } else if (leftChild != null && leftChild.getValue().equals("*")) {
                         TreeNode leftChildOfLeftChild = leftChild.getLeftChild();
@@ -76,47 +108,44 @@ public class ParallelExpressionTreeBuilder {
 
                         if (leftChildOfLeftChild != null &&
                                 rightChildOfLeftChild != null &&
-                                rightChild != null &&
-                                leftChildOfLeftChild.getValue().equals("-1")) {
-                            treeNode.setValue("-");
-                            treeNode.setLeftChild(rightChild);
-                            treeNode.setRightChild(rightChildOfLeftChild);
-                        }
-                    } else if (rightChild != null && rightChild.getValue().equals("+")) {
-                        TreeNode leftChildOfRightChild = rightChild.getLeftChild();
-                        TreeNode rightChildOfRightChild = rightChild.getRightChild();
-
-                        if (leftChildOfRightChild != null &&
-                                rightChildOfRightChild != null &&
-                                leftChildOfRightChild.getValue().equals("*") &&
-                                rightChildOfRightChild.getValue().equals("*")) {
-                            TreeNode leftChildOfLeftChildOfRightChild = leftChildOfRightChild.getLeftChild();
-                            TreeNode rightChildOfLeftChildOfRightChild = leftChildOfRightChild.getRightChild();
-
-                            TreeNode leftChildOfRightChildOfRightChild = rightChildOfRightChild.getLeftChild();
-                            TreeNode rightChildOfRightChildOfRightChild = rightChildOfRightChild.getRightChild();
-
-                            if (leftChildOfLeftChildOfRightChild != null &&
-                                    rightChildOfLeftChildOfRightChild != null &&
-                                    leftChildOfRightChildOfRightChild != null &&
-                                    rightChildOfRightChildOfRightChild != null &&
-                                    leftChildOfLeftChildOfRightChild.getValue().equals("-1") &&
-                                    leftChildOfRightChildOfRightChild.getValue().equals("-1")) {
-                                treeNode.setValue("-");
-                                rightChild.setLeftChild(rightChildOfLeftChildOfRightChild);
-                                rightChild.setRightChild(rightChildOfRightChildOfRightChild);
-                            }
+                                rightChild != null) {
+                            restructureTreeForOptimizedMinusOperationProcessingForLeftChildOfTheCurrentTreeNode(treeNode, leftChild, rightChild, leftChildOfLeftChild, rightChildOfLeftChild);
                         }
                     }
                 }
                 case "*" -> {
-                    if (leftChild != null &&
-                            rightChild != null &&
-                            leftChild.getValue().equals("-1") &&
-                            rightChild.getValue().matches("\\w+")) {
-                        treeNode.setValue("-" + rightChild.getValue());
-                        treeNode.setLeftChild(null);
-                        treeNode.setRightChild(null);
+                    if (leftChild != null && rightChild != null &&
+                            leftChild.getValue().equals("/") && rightChild.getValue().equals("/")) {
+                        TreeNode leftChildOfLeftChild = leftChild.getLeftChild();
+                        TreeNode rightChildOfLeftChild = leftChild.getRightChild();
+
+                        TreeNode leftChildOfRightChild = rightChild.getLeftChild();
+                        TreeNode rightChildOfRightChild = rightChild.getRightChild();
+
+                        if (leftChildOfLeftChild != null && rightChildOfLeftChild != null &&
+                                leftChildOfRightChild != null && rightChildOfRightChild != null &&
+                                leftChildOfLeftChild.getValue().equals("1") && leftChildOfRightChild.getValue().equals("1")) {
+                            treeNode.setValue("/");
+                            treeNode.setLeftChild(new TreeNode("1"));
+
+                            TreeNode newRightChild = new TreeNode("*");
+                            treeNode.setRightChild(newRightChild);
+
+                            newRightChild.setLeftChild(rightChildOfLeftChild);
+                            newRightChild.setRightChild(rightChildOfRightChild);
+                        } else if (leftChildOfRightChild != null &&
+                                rightChildOfRightChild != null &&
+                                leftChildOfRightChild.getValue().equals("1")) {
+                            treeNode.setValue("/");
+                            treeNode.setRightChild(rightChildOfRightChild);
+                        } else if (leftChildOfLeftChild != null &&
+                                rightChildOfLeftChild != null &&
+                                leftChildOfLeftChild.getValue().equals("1")) {
+                            treeNode.setValue("/");
+                            treeNode.setLeftChild(rightChild);
+                            treeNode.setRightChild(rightChildOfLeftChild);
+                        }
+
                     } else if (rightChild != null && rightChild.getValue().equals("/")) {
                         TreeNode leftChildOfRightChild = rightChild.getLeftChild();
                         TreeNode rightChildOfRightChild = rightChild.getRightChild();
@@ -140,33 +169,7 @@ public class ParallelExpressionTreeBuilder {
                             treeNode.setLeftChild(rightChild);
                             treeNode.setRightChild(rightChildOfLeftChild);
                         }
-                    } else if (rightChild != null && rightChild.getValue().equals("*")) {
-                        TreeNode leftChildOfRightChild = rightChild.getLeftChild();
-                        TreeNode rightChildOfRightChild = rightChild.getRightChild();
-
-                        if (leftChildOfRightChild != null &&
-                                rightChildOfRightChild != null &&
-                                leftChildOfRightChild.getValue().equals("/") &&
-                                rightChildOfRightChild.getValue().equals("/")) {
-                            TreeNode leftChildOfLeftChildOfRightChild = leftChildOfRightChild.getLeftChild();
-                            TreeNode rightChildOfLeftChildOfRightChild = leftChildOfRightChild.getRightChild();
-
-                            TreeNode leftChildOfRightChildOfRightChild = rightChildOfRightChild.getLeftChild();
-                            TreeNode rightChildOfRightChildOfRightChild = rightChildOfRightChild.getRightChild();
-
-                            if (leftChildOfLeftChildOfRightChild != null &&
-                                    rightChildOfLeftChildOfRightChild != null &&
-                                    leftChildOfRightChildOfRightChild != null &&
-                                    rightChildOfRightChildOfRightChild != null &&
-                                    leftChildOfLeftChildOfRightChild.getValue().equals("1") &&
-                                    leftChildOfRightChildOfRightChild.getValue().equals("1")) {
-                                treeNode.setValue("/");
-                                rightChild.setLeftChild(rightChildOfLeftChildOfRightChild);
-                                rightChild.setRightChild(rightChildOfRightChildOfRightChild);
-                            }
-                        }
                     }
-
                 }
             }
 
@@ -177,6 +180,65 @@ public class ParallelExpressionTreeBuilder {
             if (treeNode.getRightChild() != null) {
                 simplifyTree(treeNode.getRightChild());
             }
+        }
+    }
+
+    private void restructureTreeForOptimizedMinusOperationProcessingForLeftChildOfTheCurrentTreeNode(TreeNode treeNode, TreeNode leftChild, TreeNode rightChild, TreeNode leftChildOfLeftChild, TreeNode rightChildOfLeftChild) {
+        if (leftChildOfLeftChild.getValue().equals("-1")) {
+            treeNode.setValue("-");
+            treeNode.setLeftChild(rightChild);
+            treeNode.setRightChild(rightChildOfLeftChild);
+        } else if (leftChildOfLeftChild.getValue().matches("[*/]")) {
+            TreeNode parentOfTheMostLeftChild = getParentOfTheMostLeftChildIfPathContainsOnlyMultiplicationOrDivisionOperations(leftChild);
+            if (parentOfTheMostLeftChild != null && parentOfTheMostLeftChild.getValue().equals("*")) {
+                TreeNode theMostLeftChild = parentOfTheMostLeftChild.getLeftChild();
+                if (theMostLeftChild.getValue().equals("-1")) {
+                    treeNode.setValue("-");
+                    treeNode.setLeftChild(rightChild);
+                    treeNode.setRightChild(leftChild);
+                    parentOfTheMostLeftChild.setValue(parentOfTheMostLeftChild.getRightChild().getValue());
+                    parentOfTheMostLeftChild.setLeftChild(null);
+                    parentOfTheMostLeftChild.setRightChild(null);
+                }
+            }
+        }
+    }
+
+    private void restructureTreeForOptimizedMinusOperationProcessingForRightChildOfTheCurrentTreeNode(TreeNode treeNode, TreeNode rightChild, TreeNode leftChildOfRightChild, TreeNode rightChildOfRightChild) {
+        if (leftChildOfRightChild.getValue().equals("-1")) {
+            treeNode.setValue("-");
+            treeNode.setRightChild(rightChildOfRightChild);
+        } else if (leftChildOfRightChild.getValue().matches("[*/]")) {
+            TreeNode parentOfTheMostLeftChild = getParentOfTheMostLeftChildIfPathContainsOnlyMultiplicationOrDivisionOperations(rightChild);
+            if (parentOfTheMostLeftChild != null && parentOfTheMostLeftChild.getValue().equals("*")) {
+                TreeNode theMostLeftChild = parentOfTheMostLeftChild.getLeftChild();
+                if (theMostLeftChild.getValue().equals("-1")) {
+                    treeNode.setValue("-");
+                    parentOfTheMostLeftChild.setValue(parentOfTheMostLeftChild.getRightChild().getValue());
+                    parentOfTheMostLeftChild.setLeftChild(null);
+                    parentOfTheMostLeftChild.setRightChild(null);
+                }
+            }
+
+        }
+    }
+
+    private TreeNode getParentOfTheMostLeftChildIfPathContainsOnlyMultiplicationOrDivisionOperations(TreeNode treeNode) {
+        if (treeNode != null) {
+            TreeNode leftChild = treeNode.getLeftChild();
+            if (leftChild != null && !leftChild.getValue().matches("[+\\-]")) {
+                TreeNode leftChildOfTheLeftChild = leftChild.getLeftChild();
+                if (leftChildOfTheLeftChild != null && !leftChildOfTheLeftChild.getValue().matches("[+\\-]")) {
+                    TreeNode leftChildOfTheLeftChildOfTheLeftChild = leftChildOfTheLeftChild.getLeftChild();
+                    return leftChildOfTheLeftChildOfTheLeftChild == null ? leftChild : getParentOfTheMostLeftChildIfPathContainsOnlyMultiplicationOrDivisionOperations(leftChild);
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
         }
     }
 
