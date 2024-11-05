@@ -1,7 +1,9 @@
 package org.pzks.parsers.parallelization;
 
 import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.optimizers.AdditionAndSubtractionOperationsParallelizationOptimizer;
 import org.pzks.parsers.optimizers.ExpressionParallelizationOptimizer;
+import org.pzks.parsers.optimizers.MultiplicationAndDivisionOperationsParallelizationOptimizer;
 import org.pzks.utils.trees.TreeNode;
 import org.pzks.units.*;
 import org.pzks.units.Number;
@@ -17,26 +19,25 @@ public class ParallelExpressionTreeBuilder {
 
     public ParallelExpressionTreeBuilder(SyntaxUnit syntaxUnit) throws Exception {
         SyntaxUnit convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnit.getSyntaxUnits()));
+        MultiplicationAndDivisionOperationsParallelizationOptimizer.replaceDivisionWithMultiplication(convertedSyntaxUnit.getSyntaxUnits());
+        AdditionAndSubtractionOperationsParallelizationOptimizer.replaceSubtractionWithAddition(convertedSyntaxUnit.getSyntaxUnits());
+        convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(convertedSyntaxUnit.getSyntaxUnits()));
 
         List<String> warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(convertedSyntaxUnit.getSyntaxUnits());
         if (warnings.isEmpty()) {
             List<SyntaxUnit> syntaxUnits = convertedSyntaxUnit.getSyntaxUnits();
             takeOutNumberFromLogicalBlocksWithOneElement(syntaxUnits);
-
             DynamicList treeNodeList = convertSyntaxUnitsToListOfTreeNodes(syntaxUnits);
             buildTree(treeNodeList);
             if (treeNodeList.size() == 1) {
-                rootNode = (TreeNode) treeNodeList.getFirst();
-                simplifyTree(rootNode);
+                TreeNode rootNode = (TreeNode) treeNodeList.getFirst();
 
-                TreeNode providedTreeNode;
-                TreeNode simplifiedtreeNode;
+                TreeNode rootNodeBeforeSimplification;
                 do {
-                    providedTreeNode = rootNode.clone();
+                    rootNodeBeforeSimplification = rootNode.clone();
                     simplifyTree(rootNode);
-                    simplifiedtreeNode = rootNode.clone();
-                } while (!providedTreeNode.equals(simplifiedtreeNode));
-
+                } while (!rootNodeBeforeSimplification.equals(rootNode));
+                this.rootNode = rootNode.clone();
             }
         } else {
             System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "The provided expression is not supported for building the parallel tree!");
@@ -88,7 +89,7 @@ public class ParallelExpressionTreeBuilder {
                                 leftChildOfRightChild.getValue().matches("\\*|/|(-1)")) {
                             restructureTreeForOptimizedMinusOperationProcessingForRightChildOfTheCurrentTreeNode(treeNode, rightChild, leftChildOfRightChild, rightChildOfRightChild);
                         } else if (leftChildOfLeftChild != null &&
-                                rightChildOfLeftChild != null   &&
+                                rightChildOfLeftChild != null &&
                                 leftChildOfLeftChild.getValue().matches("\\*|/|(-1)")) {
                             restructureTreeForOptimizedMinusOperationProcessingForLeftChildOfTheCurrentTreeNode(treeNode, leftChild, rightChild, leftChildOfLeftChild, rightChildOfLeftChild);
                         }
@@ -338,10 +339,43 @@ public class ParallelExpressionTreeBuilder {
                         rightObject instanceof TreeNode rightTreeNode &&
                         leftTreeNode.getLevel() < currentLevel &&
                         rightTreeNode.getLevel() < currentLevel) {
-                    i = buildTreeNodeWithOperationAsParent(treeNodes, i, currentLevel);
+                    if (leftTreeNode.getValue().equals("-1") && currentTreeNode.getValue().equals("*") && i + 3 < treeNodes.size()) {
+                        DynamicObject nextDynamicObjectAfterRightObject = treeNodes.get(i + 2);
+                        DynamicObject nextDynamicObjectAfterNextDynamicObjectAfterRightObject = treeNodes.get(i + 3);
+                        if (nextDynamicObjectAfterRightObject instanceof TreeNode nextTreeNodeAfterRightObject &&
+                                nextTreeNodeAfterRightObject.getValue().equals("*")) {
+                            if (nextDynamicObjectAfterNextDynamicObjectAfterRightObject instanceof TreeNode nextTreeNodeAfterNextTreeNodeAfterRightObject &&
+                                    nextTreeNodeAfterNextTreeNodeAfterRightObject.getLevel() < currentLevel) {
+                                i = buildTreeNodeWithOperationAsParent(treeNodes, i + 2, currentLevel);
+                            }
+                        } else {
+                            i = buildTreeNodeWithOperationAsParent(treeNodes, i, currentLevel);
+                        }
+                    } else {
+                        i = buildTreeNodeWithOperationAsParent(treeNodes, i, currentLevel);
+                    }
+//                    i = buildTreeNodeWithOperationAsParent(treeNodes, i, currentLevel);
                 }
             } else if (structure instanceof DynamicList internalTreeNodeList && internalTreeNodeList.size() > 1) {
                 processTreeNodesForLevel(internalTreeNodeList, currentLevel);
+                replaceSingleElementDynamicListWithTreeNodeInside(treeNodes);
+
+                DynamicObject processedTreeNode = treeNodes.get(i);
+                if (processedTreeNode instanceof TreeNode treeNode) {
+                    String value = treeNode.getValue();
+                    TreeNode leftChild = treeNode.getLeftChild();
+                    TreeNode rightChild = treeNode.getRightChild();
+
+                    if (value.equals("/") &&
+                            leftChild != null &&
+                            rightChild != null &&
+                            leftChild.getValue().equals("1")) {
+                        treeNode.setLevel(0);
+                        if (i - 2 >= 0) {
+                            i -= 2;
+                        }
+                    }
+                }
             }
         }
     }
@@ -361,6 +395,14 @@ public class ParallelExpressionTreeBuilder {
             treeNodes.subList(currentPosition - 1, currentPosition + 2).clear();
             treeNodes.add(currentPosition - 1, newTreeNode);
             currentPosition--;
+
+            if (currentTreeNode.getValue().equals("*") && leftTreeNode.getValue().equals("-1")) {
+                newTreeNode.setLevel(0);
+                if (currentPosition - 2 >= 0) {
+                    currentPosition -= 2;
+                }
+            }
+
         } else if (currentTreeNode.getValue().matches("[\\-+]")) {
             if (currentPosition - 2 >= 0 && currentPosition + 2 < treeNodes.size()) {
                 TreeNode previousOperationAsTreeNode = (TreeNode) treeNodes.get(currentPosition - 2);

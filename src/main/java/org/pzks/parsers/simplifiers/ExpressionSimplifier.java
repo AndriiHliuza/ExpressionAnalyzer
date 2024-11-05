@@ -47,6 +47,112 @@ public class ExpressionSimplifier {
         SyntaxUnit simplifiedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(simplifiedExpression);
         this.syntaxUnits.clear();
         this.syntaxUnits.addAll(simplifiedSyntaxUnit.getSyntaxUnits());
+
+        combineSameAdjacentVarNumUnits(syntaxUnits);
+        simplifiedExpression = ExpressionParser.getExpressionAsString(this.syntaxUnits);
+        simplifiedExpression = new BasicExpressionSimplifier(simplifiedExpression)
+                .removeUnnecessaryZerosAfterDotInNumbers()
+                .removeOuterBracketsForRootExpression()
+                .getExpression();
+        simplifiedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(simplifiedExpression);
+        this.syntaxUnits.clear();
+        this.syntaxUnits.addAll(simplifiedSyntaxUnit.getSyntaxUnits());
+    }
+
+    private void combineSameAdjacentVarNumUnits(List<SyntaxUnit> syntaxUnits) throws Exception {
+        for (int i = 0; i < syntaxUnits.size(); i++) {
+            SyntaxUnit currentSyntaxUnit = syntaxUnits.get(i);
+            if (currentSyntaxUnit instanceof Variable) {
+                if (i + 2 < syntaxUnits.size()) {
+                    SyntaxUnit operationAsSyntaxUnit = syntaxUnits.get(i + 1);
+                    SyntaxUnit nextSyntaxUnit = syntaxUnits.get(i + 2);
+
+                    if (nextSyntaxUnit instanceof Variable && currentSyntaxUnit.getValue().equals(nextSyntaxUnit.getValue())) {
+
+                        switch (operationAsSyntaxUnit.getValue()) {
+                            case "-" -> {
+                                if (i - 2 >= 0 && i + 4 < syntaxUnits.size()) {
+                                    SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(i - 1);
+                                    SyntaxUnit nextOperationAfterNextNumberAsSyntaxUnit = syntaxUnits.get(i + 3);
+                                    if (previousOperationAsSyntaxUnit.getValue().equals("+") && nextOperationAfterNextNumberAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                                        previousOperationAsSyntaxUnit.setValue("+");
+                                        syntaxUnits.subList(i, i + 3).clear();
+                                        syntaxUnits.add(i, new Number(0, "0"));
+                                    }
+                                } else if (i - 2 >= 0) {
+                                    SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(i - 1);
+                                    if (previousOperationAsSyntaxUnit.getValue().equals("+")) {
+                                        previousOperationAsSyntaxUnit.setValue("+");
+                                        syntaxUnits.subList(i, i + 3).clear();
+                                        syntaxUnits.add(i, new Number(0, "0"));
+                                    }
+                                } else if (i + 4 < syntaxUnits.size()) {
+                                    SyntaxUnit nextOperationAfterNextNumberAsSyntaxUnit = syntaxUnits.get(i + 3);
+                                    if (nextOperationAfterNextNumberAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                                        syntaxUnits.subList(i, i + 3).clear();
+                                        syntaxUnits.add(i, new Number(0, "0"));
+                                    }
+                                } else {
+                                    syntaxUnits.subList(i, i + 3).clear();
+                                    syntaxUnits.add(i, new Number(0, "0"));
+                                }
+                            }
+                            case "+" -> {
+                                if (i - 2 >= 0 && i + 4 < syntaxUnits.size()) {
+                                    SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(i - 1);
+                                    SyntaxUnit nextOperationAfterNextNumberAsSyntaxUnit = syntaxUnits.get(i + 3);
+                                    if (previousOperationAsSyntaxUnit.getValue().equals("-") && nextOperationAfterNextNumberAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                                        syntaxUnits.subList(i, i + 3).clear();
+                                        syntaxUnits.add(i, new Number(0, "0"));
+                                    }
+                                } else if (i - 2 >= 0) {
+                                    SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(i - 1);
+                                    if (previousOperationAsSyntaxUnit.getValue().equals("-")) {
+                                        syntaxUnits.subList(i, i + 3).clear();
+                                        syntaxUnits.add(i, new Number(0, "0"));
+                                    }
+                                } else if (i + 4 < syntaxUnits.size()) {
+                                    SyntaxUnit nextOperationAfterNextNumberAsSyntaxUnit = syntaxUnits.get(i + 3);
+                                    if (nextOperationAfterNextNumberAsSyntaxUnit.getValue().matches("[+\\-]")) {
+                                        syntaxUnits.subList(i, i + 3).clear();
+                                        syntaxUnits.add(i, new Number(0, "0"));
+                                    }
+                                } else {
+                                    syntaxUnits.subList(i, i + 3).clear();
+                                    syntaxUnits.add(i, new Number(0, "0"));
+                                }
+                            }
+                            case "/" -> {
+                                if (i - 2 >= 0) {
+                                    SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(i - 1);
+                                    if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-*]")) {
+                                        syntaxUnits.subList(i, i + 3).clear();
+                                        syntaxUnits.add(i, new Number(0, "1"));
+                                    }
+                                } else {
+                                    syntaxUnits.subList(i, i + 3).clear();
+                                    syntaxUnits.add(i, new Number(0, "1"));
+                                }
+                            }
+                            case "*" -> {
+                                if (i - 2 >= 0) {
+                                    SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(i - 1);
+                                    if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-/]")) {
+                                        syntaxUnits.subList(i, i + 3).clear();
+                                        syntaxUnits.add(i, new Number(0, "1"));
+                                    }
+                                } else {
+                                    syntaxUnits.subList(i, i + 3).clear();
+                                    syntaxUnits.add(i, new Number(0, "1"));
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (currentSyntaxUnit instanceof SyntaxContainer) {
+                combineSameAdjacentVarNumUnits(currentSyntaxUnit.getSyntaxUnits());
+            }
+        }
     }
 
     private void combineAdjacentSyntaxUnits(List<SyntaxUnit> syntaxUnits) throws Exception {

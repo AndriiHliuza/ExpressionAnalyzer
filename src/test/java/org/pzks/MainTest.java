@@ -90,8 +90,21 @@ class MainTest {
         String test38= "a*b + (((-d)/b)*d)-g*h";
         String test39= "(((-1)*b)*c)*k+f*g";
         String test40= "(-1)*k+f*g";
-        String test41= "-(-i)/1.0 + 0 - 0*k*h + 2 - 4.8/2 + 1*e/2";
-        ExpressionParser.parse(test41, false, true);
+        String test41= "a*2/0 + b/(b+b*0-1*b) - 1/(c*2*4.76*(1-2+1)) + (30*f/f+5)";
+        String test42= "a-((b-c-d)-(e-f)-g)-h";
+        String test43= "a-b-c-d-e-f-g-h";
+        String test44= "a+(b+c+d+(e+f)+g)+h";
+        String test45= "a+b+c-d*f";
+        String test46= "a-b+c+d+e-f+g-h";
+        String test47= "a+c+d+e+g+(-1)*b+(-1)*f+(-1)*h";
+        String test48= "a-b-c";
+        String test49= "a+c+d+e+g-b-f-h";
+        String test50= "a*b - b*c - c*d - a*c*(b-d/e/f/g) - (g - h) - (i-j)";
+        String test51= "d-5/d";
+        String test52= "a+(b+c+d+(e+f)+g)+h";
+        String test53= "a*b+h+j-b*c-c*d-a*c*(b-d/e/f/g)-g-i";
+        String test54= "a*(-1)*b";
+        ExpressionParser.parse(test52, false, true);
 
 //        DynamicList structureList = new DynamicList();
 //        structureList.add(new TreeNode());
