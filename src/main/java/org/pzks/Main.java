@@ -12,6 +12,7 @@ public class Main {
             ExpressionParser.parse(
                     programArgsProcessor.getExpression(),
                     programArgsProcessor.shouldShowExpressionTrees(),
+                    programArgsProcessor.shouldFixExpression(),
                     programArgsProcessor.shouldBuildParallelCalculationTree(),
                     programArgsProcessor.shouldOptimizeExpressionBeforeBuildingParallelCalculationTree()
             );

@@ -23,6 +23,7 @@ public class ExpressionParser {
     public static void parse(
             String value,
             boolean printTrees,
+            boolean fixExpression,
             boolean buildParallelCalculationTree,
             boolean optimizeExpressionBeforeParallelCalculationTree
     ) throws Exception {
@@ -36,7 +37,6 @@ public class ExpressionParser {
             SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Expression Tree");
 
             boolean isExpressionValid = calculateAndShowErrors(value, parsedSyntaxUnit);
-            parsedSyntaxUnit = fixExpression(value, parsedSyntaxUnit);
 
             if (isExpressionValid) {
                 parsedSyntaxUnit = simplifyExpression(parsedSyntaxUnit);
@@ -59,6 +59,8 @@ public class ExpressionParser {
                         }
                     }
                 }
+            } else if (fixExpression) {
+                fixExpression(value, parsedSyntaxUnit);
             }
 
             System.out.println();
@@ -154,7 +156,7 @@ public class ExpressionParser {
         return isExpressionValid;
     }
 
-    private static SyntaxUnit fixExpression(String expression, SyntaxUnit parsedSyntaxUnit) throws Exception {
+    private static void fixExpression(String expression, SyntaxUnit parsedSyntaxUnit) throws Exception {
         ExpressionFixer expressionFixer = new ExpressionFixer(parsedSyntaxUnit);
         SyntaxUnit fixedSyntaxUnit = expressionFixer.getFixedSyntaxUnit();
         String fixedExpression = getExpressionAsString(fixedSyntaxUnit.getSyntaxUnits());
@@ -165,8 +167,6 @@ public class ExpressionParser {
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Corrected expression: " + Color.DEFAULT.getAnsiValue() + fixedExpression);
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is corrected: " + Color.DEFAULT.getAnsiValue() + !expression.replaceAll("\\s+", "").equals(fixedExpression));
         }
-
-        return fixedSyntaxUnit;
     }
 
     private static SyntaxUnit simplifyExpression(SyntaxUnit parsedSyntaxUnit) throws Exception {

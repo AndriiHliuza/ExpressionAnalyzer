@@ -19,14 +19,15 @@ public class ProgramArgsProcessor {
         programKeysPattern.append(")$");
 
         if (programKeys.isEmpty() || getExpression().matches(programKeysPattern.toString())) {
-            HeadlinePrinter.print("Program Usage", Color.CYAN);
-            System.out.println("Available keys:\n");
+            HeadlinePrinter.print("Manual", Color.CYAN);
+            System.out.println(Color.YELLOW.getAnsiValue() + "Available keys:\n" + Color.DEFAULT.getAnsiValue());
             for (int i = 0; i < ProgramKey.values().length; i++) {
                 ProgramKey programKey = ProgramKey.values()[i];
                 System.out.println((i + 1) + ") " + programKey.getValueForManual());
                 System.out.println("Description: " + programKey.getDescription() + "\n");
             }
             System.out.println("Note: Expression should be the last argument provided!\n");
+            System.out.println(Color.YELLOW.getAnsiValue() + "Program usage: " + Color.DEFAULT.getAnsiValue() + "java -jar expressionAnalyzer.jar <program arguments> <expression>\n");
             isValidUsage = false;
         } else {
             isValidUsage = true;
@@ -35,6 +36,10 @@ public class ProgramArgsProcessor {
 
     public boolean shouldShowExpressionTrees() {
         return programKeys.contains(ProgramKey.TREE.getValue());
+    }
+
+    public boolean shouldFixExpression() {
+        return programKeys.contains(ProgramKey.FIX.getValue());
     }
 
     public boolean shouldBuildParallelCalculationTree() {

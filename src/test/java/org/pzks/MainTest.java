@@ -104,7 +104,7 @@ class MainTest {
         String test52= "a+(b+c+d+(e+f)+g)+h";
         String test53= "a*b+h+j-b*c-c*d-a*c*(b-d/e/f/g)-g-i";
         String test54= "a*(-1)*b";
-        ExpressionParser.parse(test52, false, true, true);
+        ExpressionParser.parse(test52, false, true, true, true);
 
 //        DynamicList structureList = new DynamicList();
 //        structureList.add(new TreeNode());
