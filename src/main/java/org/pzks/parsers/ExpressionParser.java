@@ -23,7 +23,8 @@ public class ExpressionParser {
     public static void parse(
             String value,
             boolean printTrees,
-            boolean buildParallelCalculationTree
+            boolean buildParallelCalculationTree,
+            boolean optimizeExpressionBeforeParallelCalculationTree
     ) throws Exception {
         if (value.isBlank()) {
             System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + "\"" + " ".repeat(value.length()) + "\"");
@@ -41,13 +42,19 @@ public class ExpressionParser {
                 parsedSyntaxUnit = simplifyExpression(parsedSyntaxUnit);
                 boolean isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
                 if (!isArithmeticErrorsPresent) {
+                    String simplifiedExpression = getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
                     printSimplifiedExpression(parsedSyntaxUnit, value);
                     SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Simplified expression tree");
 
                     if (buildParallelCalculationTree) {
-                        parsedSyntaxUnit = optimizeSyntaxUnit(parsedSyntaxUnit);
-                        isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
-                        if (!isArithmeticErrorsPresent) {
+                        if (optimizeExpressionBeforeParallelCalculationTree) {
+                            parsedSyntaxUnit = optimizeSyntaxUnit(parsedSyntaxUnit);
+                            isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
+                            if (!isArithmeticErrorsPresent) {
+                                printOptimizedExpression(parsedSyntaxUnit, simplifiedExpression);
+                                buildParallelCalculationTree(parsedSyntaxUnit);
+                            }
+                        } else {
                             buildParallelCalculationTree(parsedSyntaxUnit);
                         }
                     }
@@ -148,13 +155,17 @@ public class ExpressionParser {
     }
 
     private static SyntaxUnit fixExpression(String expression, SyntaxUnit parsedSyntaxUnit) throws Exception {
-        HeadlinePrinter.print("Syntax corrections", Color.GREEN);
         ExpressionFixer expressionFixer = new ExpressionFixer(parsedSyntaxUnit);
         SyntaxUnit fixedSyntaxUnit = expressionFixer.getFixedSyntaxUnit();
-        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Original expression: " + Color.DEFAULT.getAnsiValue() + expression);
         String fixedExpression = getExpressionAsString(fixedSyntaxUnit.getSyntaxUnits());
-        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Corrected expression: " + Color.DEFAULT.getAnsiValue() + fixedExpression);
-        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is corrected: " + Color.DEFAULT.getAnsiValue() + !expression.replaceAll("\\s+", "").equals(fixedExpression));
+
+        if (!fixedExpression.equals(expression.replaceAll("\\s*", ""))) {
+            HeadlinePrinter.print("Syntax corrections", Color.GREEN);
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Original expression: " + Color.DEFAULT.getAnsiValue() + expression);
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Corrected expression: " + Color.DEFAULT.getAnsiValue() + fixedExpression);
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is corrected: " + Color.DEFAULT.getAnsiValue() + !expression.replaceAll("\\s+", "").equals(fixedExpression));
+        }
+
         return fixedSyntaxUnit;
     }
 
@@ -193,13 +204,7 @@ public class ExpressionParser {
 
 
     private static SyntaxUnit optimizeSyntaxUnit(SyntaxUnit syntaxUnit) throws Exception {
-        String simplifiedExpression = getExpressionAsString(syntaxUnit.getSyntaxUnits());
-
         ExpressionParallelizationOptimizer expressionParallelizationOptimizer = new ExpressionParallelizationOptimizer(syntaxUnit);
-
-        SyntaxUnit partiallyOptimizedSyntaxUnit = expressionParallelizationOptimizer.getPartiallyOptimizedSyntaxUnit();
-        printOptimizedExpression(partiallyOptimizedSyntaxUnit, simplifiedExpression);
-
         return expressionParallelizationOptimizer.getFullyOptimizedSyntaxUnit();
     }
 
@@ -213,16 +218,35 @@ public class ExpressionParser {
 
     private static void buildParallelCalculationTree(SyntaxUnit syntaxUnit) throws Exception {
         ParallelExpressionTreeBuilder treeBuilder = new ParallelExpressionTreeBuilder(syntaxUnit);
-        TreeNode rootNode = treeBuilder.getRootNode();
+        List<String> warnings = treeBuilder.getWarnings();
+        if (warnings.isEmpty()) {
+            TreeNode rootNode = treeBuilder.getRootNode();
 
-        HeadlinePrinter.print("Tree building info", Color.GREEN);
-        boolean isSuccessfullySaved = TreeSerializer.safeToCurrentDirectory(rootNode);
-        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Tree was successfully build.");
+            HeadlinePrinter.print("Tree building info", Color.GREEN);
+            boolean isSuccessfullySaved = TreeSerializer.safeToCurrentDirectory(rootNode);
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Tree was successfully build.");
 
-        File currentDirectory = new File(".");
-        String savedFileLocation = currentDirectory.getAbsolutePath().substring(0, currentDirectory.getAbsolutePath().length() - 1) + "tree.json";
+            File currentDirectory = new File(".");
+            String savedFileLocation = currentDirectory.getAbsolutePath().substring(0, currentDirectory.getAbsolutePath().length() - 1) + "tree.json";
 
-        String messageUponSaving = isSuccessfullySaved ? "Tree was saved to '" + savedFileLocation + "'" : "Oops, something went wrong. File wasn't saved.";
-        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + messageUponSaving);
+            String messageUponSaving = isSuccessfullySaved ? "Tree was saved to '" + savedFileLocation + "'" : "Oops, something went wrong. File wasn't saved.";
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + messageUponSaving);
+        } else {
+            System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "The provided expression is not supported for building the parallel tree!");
+            int maxWarningLength = warnings.stream()
+                    .mapToInt(String::length)
+                    .max()
+                    .orElse(20);
+            maxWarningLength = Math.max(maxWarningLength, 29);
+
+            System.out.println("-".repeat(10) + Color.YELLOW.getAnsiValue() + "Warning details" + Color.DEFAULT.getAnsiValue() + "-".repeat(maxWarningLength + 6 - 25));
+            for (String warning : warnings) {
+                int warningLength = warning.length();
+                int numberOfSpacesToAddTOTheOutput = maxWarningLength - warningLength;
+                System.out.println("| - " + warning + " ".repeat(numberOfSpacesToAddTOTheOutput) + " |");
+            }
+            System.out.println("-".repeat(maxWarningLength + 6));
+        }
+
     }
 }

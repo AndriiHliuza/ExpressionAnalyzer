@@ -16,6 +16,7 @@ import java.util.List;
 
 public class ParallelExpressionTreeBuilder {
     private TreeNode rootNode;
+    private List<String> warnings = new ArrayList<>();
 
     public ParallelExpressionTreeBuilder(SyntaxUnit syntaxUnit) throws Exception {
         SyntaxUnit convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnit.getSyntaxUnits()));
@@ -23,7 +24,8 @@ public class ParallelExpressionTreeBuilder {
         AdditionAndSubtractionOperationsParallelizationOptimizer.replaceSubtractionWithAddition(convertedSyntaxUnit.getSyntaxUnits());
         convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(convertedSyntaxUnit.getSyntaxUnits()));
 
-        List<String> warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(convertedSyntaxUnit.getSyntaxUnits());
+//        List<String> warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(convertedSyntaxUnit.getSyntaxUnits());
+        warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(convertedSyntaxUnit.getSyntaxUnits());
         if (warnings.isEmpty()) {
             List<SyntaxUnit> syntaxUnits = convertedSyntaxUnit.getSyntaxUnits();
             takeOutNumberFromLogicalBlocksWithOneElement(syntaxUnits);
@@ -39,21 +41,6 @@ public class ParallelExpressionTreeBuilder {
                 } while (!rootNodeBeforeSimplification.equals(rootNode));
                 this.rootNode = rootNode.clone();
             }
-        } else {
-            System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "The provided expression is not supported for building the parallel tree!");
-            int maxWarningLength = warnings.stream()
-                    .mapToInt(String::length)
-                    .max()
-                    .orElse(20);
-            maxWarningLength = Math.max(maxWarningLength, 29);
-
-            System.out.println("-".repeat(10) + Color.YELLOW.getAnsiValue() + "Warning details" + Color.DEFAULT.getAnsiValue() + "-".repeat(maxWarningLength + 6 - 25));
-            for (String warning : warnings) {
-                int warningLength = warning.length();
-                int numberOfSpacesToAddTOTheOutput = maxWarningLength - warningLength;
-                System.out.println("| - " + warning + " ".repeat(numberOfSpacesToAddTOTheOutput) + " |");
-            }
-            System.out.println("-".repeat(maxWarningLength + 6));
         }
     }
 
@@ -462,5 +449,9 @@ public class ParallelExpressionTreeBuilder {
 
     public TreeNode getRootNode() {
         return rootNode;
+    }
+
+    public List<String> getWarnings() {
+        return warnings;
     }
 }

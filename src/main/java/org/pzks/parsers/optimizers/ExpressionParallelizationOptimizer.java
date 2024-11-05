@@ -8,7 +8,6 @@ import java.util.List;
 
 public class ExpressionParallelizationOptimizer {
     private List<SyntaxUnit> syntaxUnits;
-    private List<SyntaxUnit> partiallyOptimizedSyntaxUnits = new ArrayList<>();
 
     public ExpressionParallelizationOptimizer(SyntaxUnit syntaxUnit) throws Exception {
         this.syntaxUnits = syntaxUnit.getSyntaxUnits();
@@ -20,17 +19,9 @@ public class ExpressionParallelizationOptimizer {
         syntaxUnits = syntaxUnitsTransformer
                 .openBracketsAfterPlusOrMinusOperations()
                 .getTransformedSyntaxUnits();
-
-        partiallyOptimizedSyntaxUnits = ExpressionParser
-                .convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits))
-                .getSyntaxUnits();
     }
 
     public SyntaxUnit getFullyOptimizedSyntaxUnit() throws Exception {
         return ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
-    }
-
-    public SyntaxUnit getPartiallyOptimizedSyntaxUnit() throws Exception {
-        return ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(partiallyOptimizedSyntaxUnits));
     }
 }
