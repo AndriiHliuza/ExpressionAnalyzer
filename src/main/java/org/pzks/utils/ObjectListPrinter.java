@@ -7,7 +7,7 @@ public class ObjectListPrinter {
     private static final StringBuilder spaceBuilder = new StringBuilder();
 
     public static void printTreeWithHeadline(List<?> objects, String headline) {
-        HeadlinePrinter.print(headline, Color.CYAN);
+        HeadlinePrinter.print(headline, Color.GREEN);
         printTree(objects);
     }
 

@@ -1,17 +1,17 @@
 package org.pzks.parsers;
 
 import org.pzks.fixers.ExpressionFixer;
+import org.pzks.parsers.math.laws.CommutativePropertyBasedSyntaxSyntaxUnitsProcessor;
 import org.pzks.parsers.optimizers.ExpressionParallelizationOptimizer;
 import org.pzks.parsers.parallelization.ParallelExpressionTreeBuilder;
+import org.pzks.utils.*;
+import org.pzks.utils.args.processor.ProgramKeyArg;
+import org.pzks.utils.args.processor.PropertyArg;
 import org.pzks.utils.trees.TreeNode;
 import org.pzks.parsers.simplifiers.ExpressionSimplifier;
 import org.pzks.units.FunctionParam;
 import org.pzks.units.SyntaxContainer;
 import org.pzks.units.SyntaxUnit;
-import org.pzks.utils.Color;
-import org.pzks.utils.HeadlinePrinter;
-import org.pzks.utils.SyntaxUnitErrorMessageBuilder;
-import org.pzks.utils.SyntaxUnitMetaDataPrinter;
 import org.pzks.utils.trees.TreeSerializer;
 
 import java.io.File;
@@ -22,10 +22,10 @@ public class ExpressionParser {
 
     public static void parse(
             String value,
-            boolean printTrees,
+            boolean verbose,
             boolean fixExpression,
-            boolean buildParallelCalculationTree,
-            boolean optimizeExpressionBeforeParallelCalculationTree
+            List<PropertyArg> propertyArgs,
+            boolean buildParallelCalculationTree
     ) throws Exception {
         if (value.isBlank()) {
             System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + "\"" + " ".repeat(value.length()) + "\"");
@@ -34,7 +34,7 @@ public class ExpressionParser {
             SyntaxUnit parsedSyntaxUnit = convertExpressionToParsedSyntaxUnit(value);
 
             System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);
-            SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Expression Tree");
+            SyntaxUnitMetaDataPrinter.printTreeWithHeadline(verbose, false, parsedSyntaxUnit, "Expression Tree");
 
             boolean isExpressionValid = calculateAndShowErrors(value, parsedSyntaxUnit);
 
@@ -44,18 +44,32 @@ public class ExpressionParser {
                 if (!isArithmeticErrorsPresent) {
                     String simplifiedExpression = getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
                     printSimplifiedExpression(parsedSyntaxUnit, value);
-                    SyntaxUnitMetaDataPrinter.printTreeWithHeadline(printTrees, false, parsedSyntaxUnit, "Simplified expression tree");
+                    SyntaxUnitMetaDataPrinter.printTreeWithHeadline(verbose, false, parsedSyntaxUnit, "Simplified expression tree");
 
-                    if (buildParallelCalculationTree) {
-                        if (optimizeExpressionBeforeParallelCalculationTree) {
-                            parsedSyntaxUnit = optimizeSyntaxUnit(parsedSyntaxUnit);
-                            isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
+                    isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
+
+                    if (!isArithmeticErrorsPresent) {
+                        parsedSyntaxUnit = optimizeSyntaxUnit(parsedSyntaxUnit);
+                        String optimizedExpression = getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
+                        printOptimizedExpression(parsedSyntaxUnit, simplifiedExpression);
+                        SyntaxUnitMetaDataPrinter.printTreeWithHeadline(verbose, false, parsedSyntaxUnit, "Optimized expression tree");
+
+                        isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
+
+                        if (propertyArgs.isEmpty()) {
                             if (!isArithmeticErrorsPresent) {
-                                printOptimizedExpression(parsedSyntaxUnit, simplifiedExpression);
-                                buildParallelCalculationTree(parsedSyntaxUnit);
+                                if (buildParallelCalculationTree) {
+                                    buildParallelCalculationTree(parsedSyntaxUnit, "tree.json");
+                                }
                             }
                         } else {
-                            buildParallelCalculationTree(parsedSyntaxUnit);
+                            propertyProcessing(
+                                    parsedSyntaxUnit,
+                                    propertyArgs,
+                                    isArithmeticErrorsPresent,
+                                    buildParallelCalculationTree,
+                                    optimizedExpression
+                            );
                         }
                     }
                 }
@@ -216,18 +230,18 @@ public class ExpressionParser {
         System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is optimized: " + Color.DEFAULT.getAnsiValue() + !baseExpression.replaceAll("\\s+", "").equals(optimizedExpression));
     }
 
-    private static void buildParallelCalculationTree(SyntaxUnit syntaxUnit) throws Exception {
+    private static void buildParallelCalculationTree(SyntaxUnit syntaxUnit, String fileName) throws Exception {
         ParallelExpressionTreeBuilder treeBuilder = new ParallelExpressionTreeBuilder(syntaxUnit);
         List<String> warnings = treeBuilder.getWarnings();
         if (warnings.isEmpty()) {
             TreeNode rootNode = treeBuilder.getRootNode();
 
             HeadlinePrinter.print("Tree building info", Color.GREEN);
-            boolean isSuccessfullySaved = TreeSerializer.safeToCurrentDirectory(rootNode);
+            boolean isSuccessfullySaved = TreeSerializer.safeToCurrentDirectory(rootNode, fileName);
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Tree was successfully build.");
 
             File currentDirectory = new File(".");
-            String savedFileLocation = currentDirectory.getAbsolutePath().substring(0, currentDirectory.getAbsolutePath().length() - 1) + "tree.json";
+            String savedFileLocation = currentDirectory.getAbsolutePath().substring(0, currentDirectory.getAbsolutePath().length() - 1) + fileName;
 
             String messageUponSaving = isSuccessfullySaved ? "Tree was saved to '" + savedFileLocation + "'" : "Oops, something went wrong. File wasn't saved.";
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + messageUponSaving);
@@ -248,5 +262,83 @@ public class ExpressionParser {
             System.out.println("-".repeat(maxWarningLength + 6));
         }
 
+    }
+
+    private static SyntaxUnit calculateCommutativePropertyBasedSyntaxUnit(PropertyArg propertyArg, SyntaxUnit syntaxUnit, String baseExpression) throws Exception {
+        return switch (propertyArg) {
+            case COMMUTATIVE -> {
+                CommutativePropertyBasedSyntaxSyntaxUnitsProcessor commutativePropertyBasedSyntaxSyntaxUnitsProcessor = new CommutativePropertyBasedSyntaxSyntaxUnitsProcessor(syntaxUnit);
+                syntaxUnit = commutativePropertyBasedSyntaxSyntaxUnitsProcessor.getProcessedSyntaxUnit();
+                HeadlinePrinter.print("Commutative property", Color.GREEN);
+
+                String modifiedExpression = getExpressionAsString(syntaxUnit.getSyntaxUnits());
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Optimized expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Modified expression: " + Color.DEFAULT.getAnsiValue() + modifiedExpression);
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is modified: " + Color.DEFAULT.getAnsiValue() + !baseExpression.replaceAll("\\s+", "").equals(modifiedExpression));
+                yield convertExpressionToParsedSyntaxUnit(modifiedExpression);
+            }
+            case ASSOCIATIVE -> {
+                HeadlinePrinter.print("Associative property", Color.GREEN);
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Optimized expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Modified expression: " + Color.DEFAULT.getAnsiValue() + "To be implemented...");
+                yield syntaxUnit;
+            }
+            case DEFAULT -> {
+                HeadlinePrinter.print("Default property", Color.GREEN);
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Optimized expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "Nothing to modify");
+                yield syntaxUnit;
+            }
+            case null -> null;
+        };
+    }
+
+    private static void propertyProcessing(
+            SyntaxUnit syntaxUnit,
+            List<PropertyArg> propertyArgs,
+            boolean isArithmeticErrorsPresent,
+            boolean buildParallelCalculationTree,
+            String optimizedExpression
+    ) throws Exception {
+        System.out.println("\n" + Font.BOLD.getAnsiValue() +
+                Color.BRIGHT_BLUE_GRAY_BACKGROUND.getAnsiValue() +
+                Color.DARK_BLUE.getAnsiValue() +
+                " ".repeat(20) +
+                "Property processing" +
+                " ".repeat(20) +
+                Color.DEFAULT.getAnsiValue() +
+                Font.DEFAULT.getAnsiValue()
+        );
+        for (PropertyArg propertyArg : propertyArgs) {
+            switch (propertyArg) {
+                case DEFAULT -> {
+                    SyntaxUnit syntaxUnitToModifyAccordingToPropertyValue = convertExpressionToParsedSyntaxUnit(getExpressionAsString(syntaxUnit.getSyntaxUnits()));
+                    if (!isArithmeticErrorsPresent) {
+                        syntaxUnitToModifyAccordingToPropertyValue = calculateCommutativePropertyBasedSyntaxUnit(propertyArg, syntaxUnitToModifyAccordingToPropertyValue, optimizedExpression);
+                        if (buildParallelCalculationTree) {
+                            buildParallelCalculationTree(syntaxUnitToModifyAccordingToPropertyValue, "tree.json");
+                        }
+                    }
+                }
+                case COMMUTATIVE -> {
+                    SyntaxUnit syntaxUnitToModifyAccordingToPropertyValue = convertExpressionToParsedSyntaxUnit(getExpressionAsString(syntaxUnit.getSyntaxUnits()));
+                    if (!isArithmeticErrorsPresent) {
+                        syntaxUnitToModifyAccordingToPropertyValue = calculateCommutativePropertyBasedSyntaxUnit(propertyArg, syntaxUnitToModifyAccordingToPropertyValue, optimizedExpression);
+                        if (buildParallelCalculationTree) {
+                            buildParallelCalculationTree(syntaxUnitToModifyAccordingToPropertyValue, "commutative-tree.json");
+                        }
+                    }
+                }
+                case ASSOCIATIVE -> {
+                    SyntaxUnit syntaxUnitToModifyAccordingToPropertyValue = convertExpressionToParsedSyntaxUnit(getExpressionAsString(syntaxUnit.getSyntaxUnits()));
+                    if (!isArithmeticErrorsPresent) {
+                        syntaxUnitToModifyAccordingToPropertyValue = calculateCommutativePropertyBasedSyntaxUnit(propertyArg, syntaxUnitToModifyAccordingToPropertyValue, optimizedExpression);
+                        if (buildParallelCalculationTree) {
+                            buildParallelCalculationTree(syntaxUnitToModifyAccordingToPropertyValue, "associative-tree.json");
+                        }
+                    }
+                }
+            }
+        }
     }
 }

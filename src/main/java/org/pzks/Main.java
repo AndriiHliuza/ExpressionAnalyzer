@@ -1,7 +1,7 @@
 package org.pzks;
 
 import org.pzks.parsers.ExpressionParser;
-import org.pzks.utils.ProgramArgsProcessor;
+import org.pzks.utils.args.processor.ProgramArgsProcessor;
 
 public class Main {
 
@@ -11,10 +11,10 @@ public class Main {
         if (programArgsProcessor.isValidUsage()) {
             ExpressionParser.parse(
                     programArgsProcessor.getExpression(),
-                    programArgsProcessor.shouldShowExpressionTrees(),
-                    programArgsProcessor.shouldFixExpression(),
-                    programArgsProcessor.shouldBuildParallelCalculationTree(),
-                    programArgsProcessor.shouldOptimizeExpressionBeforeBuildingParallelCalculationTree()
+                    programArgsProcessor.shouldShowVerboseOutput(),
+                    programArgsProcessor.shouldFixExpressionIfErrorsPresent(),
+                    programArgsProcessor.getPropertyArgs(),
+                    programArgsProcessor.shouldBuildParallelCalculationTree()
             );
         }
     }

@@ -24,7 +24,7 @@ public class SyntaxUnitMetaDataPrinter {
 
     public static void printTreeWithHeadline(boolean printTree, boolean includeDetails, SyntaxUnit parsedSyntaxUnit, String headline) {
         if (printTree) {
-            HeadlinePrinter.print(headline, Color.CYAN);
+            HeadlinePrinter.print(headline, Color.GREEN);
             List<SyntaxUnit> syntaxUnits = parsedSyntaxUnit.getSyntaxUnits();
             SyntaxUnitMetaDataPrinter.printTree(syntaxUnits, includeDetails);
         }

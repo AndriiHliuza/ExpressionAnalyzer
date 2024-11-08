@@ -44,3 +44,5 @@ bin/
 .idea/
 
 tree.json
+commutative-tree.json
+associative-tree.json

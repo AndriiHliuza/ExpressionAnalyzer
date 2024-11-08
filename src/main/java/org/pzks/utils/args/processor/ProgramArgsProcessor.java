@@ -1,7 +1,12 @@
-package org.pzks.utils;
+package org.pzks.utils.args.processor;
 
+import org.pzks.utils.Color;
+import org.pzks.utils.HeadlinePrinter;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProgramArgsProcessor {
 
@@ -19,11 +24,11 @@ public class ProgramArgsProcessor {
         programKeysPattern.append(")$");
 
         if (programKeys.isEmpty() || getExpression().matches(programKeysPattern.toString())) {
-            HeadlinePrinter.print("Manual", Color.CYAN);
+            HeadlinePrinter.print("Manual", Color.GREEN);
             System.out.println(Color.YELLOW.getAnsiValue() + "Available keys:\n" + Color.DEFAULT.getAnsiValue());
             for (int i = 0; i < ProgramKey.values().length; i++) {
                 ProgramKey programKey = ProgramKey.values()[i];
-                System.out.println((i + 1) + ") " + programKey.getValueForManual());
+                System.out.println((i + 1) + ") " + Color.BRIGHT_MAGENTA.getAnsiValue() + programKey.getValue() + Color.DEFAULT.getAnsiValue());
                 System.out.println("Description: " + programKey.getDescription() + "\n");
             }
             System.out.println("Note: Expression should be the last argument provided!\n");
@@ -34,11 +39,11 @@ public class ProgramArgsProcessor {
         }
     }
 
-    public boolean shouldShowExpressionTrees() {
-        return programKeys.contains(ProgramKey.TREE.getValue());
+    public boolean shouldShowVerboseOutput() {
+        return programKeys.contains(ProgramKey.VERBOSE.getValue());
     }
 
-    public boolean shouldFixExpression() {
+    public boolean shouldFixExpressionIfErrorsPresent() {
         return programKeys.contains(ProgramKey.FIX.getValue());
     }
 
@@ -46,8 +51,25 @@ public class ProgramArgsProcessor {
         return programKeys.contains(ProgramKey.PARALLEL_CALCULATION_TREE.getValue());
     }
 
-    public boolean shouldOptimizeExpressionBeforeBuildingParallelCalculationTree() {
-        return programKeys.contains(ProgramKey.EXPRESSION_OPTIMIZATION_BEFORE_BUILDING_PARALLEL_CALCULATION_TREE.getValue());
+    public List<PropertyArg> getPropertyArgs() {
+        String propertyKeyValuesPattern = ProgramKey.PROPERTY.getProgramKeyArgs().stream()
+                .filter(PropertyArg.class::isInstance)
+                .map(PropertyArg.class::cast)
+                .map(propertyArgs -> propertyArgs.name().toLowerCase())
+                .collect(Collectors.joining("|"));
+        List<PropertyArg> propertyArgs = new ArrayList<>();
+        for (String programKey : programKeys) {
+            if (programKey.matches(ProgramKey.PROPERTY.getValue() + "=" + ".+")) {
+                propertyArgs = Arrays.stream(programKey.split("[=,]"))
+                        .filter(programKeyComponent -> !programKeyComponent.equals(ProgramKey.PROPERTY.getValue()))
+                        .filter(propertyArg -> propertyArg.matches(propertyKeyValuesPattern))
+                        .map(String::toUpperCase)
+                        .map(PropertyArg::valueOf)
+                        .toList();
+            }
+        }
+
+        return propertyArgs;
     }
 
     public String getExpression() {

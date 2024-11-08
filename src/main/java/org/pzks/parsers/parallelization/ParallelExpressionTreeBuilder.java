@@ -2,12 +2,10 @@ package org.pzks.parsers.parallelization;
 
 import org.pzks.parsers.ExpressionParser;
 import org.pzks.parsers.optimizers.AdditionAndSubtractionOperationsParallelizationOptimizer;
-import org.pzks.parsers.optimizers.ExpressionParallelizationOptimizer;
 import org.pzks.parsers.optimizers.MultiplicationAndDivisionOperationsParallelizationOptimizer;
 import org.pzks.utils.trees.TreeNode;
 import org.pzks.units.*;
 import org.pzks.units.Number;
-import org.pzks.utils.Color;
 import org.pzks.utils.DynamicList;
 import org.pzks.utils.DynamicObject;
 
@@ -16,7 +14,7 @@ import java.util.List;
 
 public class ParallelExpressionTreeBuilder {
     private TreeNode rootNode;
-    private List<String> warnings = new ArrayList<>();
+    private List<String> warnings;
 
     public ParallelExpressionTreeBuilder(SyntaxUnit syntaxUnit) throws Exception {
         SyntaxUnit convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnit.getSyntaxUnits()));
@@ -24,7 +22,6 @@ public class ParallelExpressionTreeBuilder {
         AdditionAndSubtractionOperationsParallelizationOptimizer.replaceSubtractionWithAddition(convertedSyntaxUnit.getSyntaxUnits());
         convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(convertedSyntaxUnit.getSyntaxUnits()));
 
-//        List<String> warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(convertedSyntaxUnit.getSyntaxUnits());
         warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(convertedSyntaxUnit.getSyntaxUnits());
         if (warnings.isEmpty()) {
             List<SyntaxUnit> syntaxUnits = convertedSyntaxUnit.getSyntaxUnits();
@@ -341,7 +338,6 @@ public class ParallelExpressionTreeBuilder {
                     } else {
                         i = buildTreeNodeWithOperationAsParent(treeNodes, i, currentLevel);
                     }
-//                    i = buildTreeNodeWithOperationAsParent(treeNodes, i, currentLevel);
                 }
             } else if (structure instanceof DynamicList internalTreeNodeList && internalTreeNodeList.size() > 1) {
                 processTreeNodesForLevel(internalTreeNodeList, currentLevel);

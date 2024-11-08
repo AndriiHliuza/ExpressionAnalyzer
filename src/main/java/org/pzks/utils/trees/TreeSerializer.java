@@ -18,7 +18,7 @@ public class TreeSerializer {
         }
     }
 
-    public static boolean safeToCurrentDirectory(TreeNode treeNode) {
-        return saveToFile(treeNode, "tree.json");
+    public static boolean safeToCurrentDirectory(TreeNode treeNode, String fileName) {
+        return saveToFile(treeNode, fileName);
     }
 }

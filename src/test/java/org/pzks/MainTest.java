@@ -1,6 +1,9 @@
 package org.pzks;
 
 import org.pzks.parsers.ExpressionParser;
+import org.pzks.utils.args.processor.PropertyArg;
+
+import java.util.List;
 
 class MainTest {
     public static void main(String[] args) throws Exception {
@@ -102,9 +105,19 @@ class MainTest {
         String test50= "a*b - b*c - c*d - a*c*(b-d/e/f/g) - (g - h) - (i-j)";
         String test51= "d-5/d";
         String test52= "a+(b+c+d+(e+f)+g)+h";
-        String test53= "a*b+h+j-b*c-c*d-a*c*(b-d/e/f/g)-g-i";
+        String test53= "a*b - b*c - c*d - a*c*(b-d/e/f/g) - (g - h) - (i-j)";
         String test54= "a*(-1)*b";
-        ExpressionParser.parse(test52, false, true, true, true);
+        String test55= "exp(sin(a+b/2-pi)+a*cos(a*pi+b*pi/3-w+k*t)-5+log(2.72)/T-1)+2048+a+b*c+log(t-1)-2*log(Q)-8*d/dt*exp(t/2+H)-sin(a)/cos(a)";
+        String test56= "a-b*c+k";
+        String test57= "-8*d/dt*exp(t/2+H)-sin(a)/cos(a)-2*log(Q)+b*c+exp(log(2.72)/T+a*cos(b*pi/3+k*t+a*pi-w)+sin(b/2+a-pi)-6)+2048+a+log(t-1)";
+        String test58= "-8*d/dt*exp(t/2+H)+b*c-2*log(Q)-sin(a)/cos(a)+exp(a*cos(b*pi/3+a*pi+k*t-w)+log(2.72)/T+sin(b/2+a-pi)-6)+2048+a+log(t-1)";
+        ExpressionParser.parse(
+                test56,
+                false,
+                true,
+                List.of(PropertyArg.COMMUTATIVE, PropertyArg.DEFAULT, PropertyArg.ASSOCIATIVE),
+                false
+        );
 
 //        DynamicList structureList = new DynamicList();
 //        structureList.add(new TreeNode());
