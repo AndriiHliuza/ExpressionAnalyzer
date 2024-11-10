@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class CommutativePropertyBasedSyntaxSyntaxUnitsProcessor {
+public class CommutativePropertyBasedSyntaxUnitProcessor {
     private List<SyntaxUnit> syntaxUnits;
 
-    public CommutativePropertyBasedSyntaxSyntaxUnitsProcessor(SyntaxUnit syntaxUnit) {
+    public CommutativePropertyBasedSyntaxUnitProcessor(SyntaxUnit syntaxUnit) {
         this.syntaxUnits = syntaxUnit.getSyntaxUnits();
         process(syntaxUnits);
     }

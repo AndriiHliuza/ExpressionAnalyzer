@@ -1,7 +1,8 @@
 package org.pzks.parsers;
 
 import org.pzks.fixers.ExpressionFixer;
-import org.pzks.parsers.math.laws.CommutativePropertyBasedSyntaxSyntaxUnitsProcessor;
+import org.pzks.parsers.math.laws.AssociativePropertyBasedSyntaxUnitProcessor;
+import org.pzks.parsers.math.laws.CommutativePropertyBasedSyntaxUnitProcessor;
 import org.pzks.parsers.optimizers.ExpressionParallelizationOptimizer;
 import org.pzks.parsers.parallelization.ParallelExpressionTreeBuilder;
 import org.pzks.utils.*;
@@ -35,7 +36,7 @@ public class ExpressionParser {
             SyntaxUnit parsedSyntaxUnit = convertExpressionToParsedSyntaxUnit(value);
 
             System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);
-            HeadlinePrinter.printWithBackground("Preprocessing...");
+            HeadlinePrinter.printWithBackground("Expression analysis & Optimizations...");
             SyntaxUnitMetaDataPrinter.printTreeWithHeadline(verbose, false, parsedSyntaxUnit, "Expression Tree");
 
             boolean isExpressionValid = calculateAndShowErrors(value, parsedSyntaxUnit);
@@ -269,35 +270,6 @@ public class ExpressionParser {
 
     }
 
-    private static SyntaxUnit calculateCommutativePropertyBasedSyntaxUnit(PropertyArg propertyArg, SyntaxUnit syntaxUnit, String baseExpression) throws Exception {
-        return switch (propertyArg) {
-            case COMMUTATIVE -> {
-                CommutativePropertyBasedSyntaxSyntaxUnitsProcessor commutativePropertyBasedSyntaxSyntaxUnitsProcessor = new CommutativePropertyBasedSyntaxSyntaxUnitsProcessor(syntaxUnit);
-                syntaxUnit = commutativePropertyBasedSyntaxSyntaxUnitsProcessor.getProcessedSyntaxUnit();
-                HeadlinePrinter.print("Commutative property", Color.GREEN);
-
-                String modifiedExpression = getExpressionAsString(syntaxUnit.getSyntaxUnits());
-                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Provided expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
-                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Modified expression: " + Color.DEFAULT.getAnsiValue() + modifiedExpression);
-                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is modified: " + Color.DEFAULT.getAnsiValue() + !baseExpression.replaceAll("\\s+", "").equals(modifiedExpression));
-                yield convertExpressionToParsedSyntaxUnit(modifiedExpression);
-            }
-            case ASSOCIATIVE -> {
-                HeadlinePrinter.print("Associative property", Color.GREEN);
-                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Provided expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
-                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Modified expression: " + Color.DEFAULT.getAnsiValue() + "To be implemented...");
-                yield syntaxUnit;
-            }
-            case DEFAULT -> {
-                HeadlinePrinter.print("Default property", Color.GREEN);
-                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Provided expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
-                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "Nothing to modify");
-                yield syntaxUnit;
-            }
-            case null -> null;
-        };
-    }
-
     private static void propertyProcessing(
             SyntaxUnit syntaxUnit,
             List<PropertyArg> propertyArgs,
@@ -311,7 +283,9 @@ public class ExpressionParser {
                 case DEFAULT -> {
                     SyntaxUnit syntaxUnitToModifyAccordingToPropertyValue = convertExpressionToParsedSyntaxUnit(getExpressionAsString(syntaxUnit.getSyntaxUnits()));
                     if (!isArithmeticErrorsPresent) {
-                        syntaxUnitToModifyAccordingToPropertyValue = calculateCommutativePropertyBasedSyntaxUnit(propertyArg, syntaxUnitToModifyAccordingToPropertyValue, expressionBeforeProcessingProperty);
+                        HeadlinePrinter.print("Default property", Color.GREEN);
+                        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Provided expression: " + Color.DEFAULT.getAnsiValue() + expressionBeforeProcessingProperty);
+                        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "Nothing to modify");
                         if (buildParallelCalculationTree) {
                             buildParallelCalculationTree(syntaxUnitToModifyAccordingToPropertyValue, "tree.json");
                         }
@@ -320,7 +294,7 @@ public class ExpressionParser {
                 case COMMUTATIVE -> {
                     SyntaxUnit syntaxUnitToModifyAccordingToPropertyValue = convertExpressionToParsedSyntaxUnit(getExpressionAsString(syntaxUnit.getSyntaxUnits()));
                     if (!isArithmeticErrorsPresent) {
-                        syntaxUnitToModifyAccordingToPropertyValue = calculateCommutativePropertyBasedSyntaxUnit(propertyArg, syntaxUnitToModifyAccordingToPropertyValue, expressionBeforeProcessingProperty);
+                        syntaxUnitToModifyAccordingToPropertyValue = calculateCommutativePropertyBasedSyntaxUnit(syntaxUnitToModifyAccordingToPropertyValue, expressionBeforeProcessingProperty);
                         if (buildParallelCalculationTree) {
                             buildParallelCalculationTree(syntaxUnitToModifyAccordingToPropertyValue, "commutative-tree.json");
                         }
@@ -329,13 +303,53 @@ public class ExpressionParser {
                 case ASSOCIATIVE -> {
                     SyntaxUnit syntaxUnitToModifyAccordingToPropertyValue = convertExpressionToParsedSyntaxUnit(getExpressionAsString(syntaxUnit.getSyntaxUnits()));
                     if (!isArithmeticErrorsPresent) {
-                        syntaxUnitToModifyAccordingToPropertyValue = calculateCommutativePropertyBasedSyntaxUnit(propertyArg, syntaxUnitToModifyAccordingToPropertyValue, expressionBeforeProcessingProperty);
+                        calculateAssociativePropertyBasedSyntaxUnits(syntaxUnitToModifyAccordingToPropertyValue, expressionBeforeProcessingProperty);
+
                         if (buildParallelCalculationTree) {
-                            buildParallelCalculationTree(syntaxUnitToModifyAccordingToPropertyValue, "associative-tree.json");
+                            HeadlinePrinter.print("Tree building info", Color.GREEN);
+                            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() +
+                                    "Tree building is not supported for associative property " +
+                                    "due to potentially large number of expressions.");
+
+                            System.out.println("-".repeat(10) + Color.BRIGHT_MAGENTA.getAnsiValue() + "Log details" + Color.DEFAULT.getAnsiValue() + "-".repeat(67));
+                            System.out.println("| Please run program again with generated expression if you want to build tree for it. |");
+                            System.out.println("-".repeat(88));
                         }
                     }
                 }
             }
         }
+    }
+
+    private static SyntaxUnit calculateCommutativePropertyBasedSyntaxUnit(SyntaxUnit syntaxUnit, String baseExpression) throws Exception {
+        CommutativePropertyBasedSyntaxUnitProcessor commutativePropertyBasedSyntaxUnitsProcessor = new CommutativePropertyBasedSyntaxUnitProcessor(syntaxUnit);
+        syntaxUnit = commutativePropertyBasedSyntaxUnitsProcessor.getProcessedSyntaxUnit();
+        HeadlinePrinter.print("Commutative property", Color.GREEN);
+
+        String modifiedExpression = getExpressionAsString(syntaxUnit.getSyntaxUnits());
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Provided expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Modified expression: " + Color.DEFAULT.getAnsiValue() + modifiedExpression);
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Is modified: " + Color.DEFAULT.getAnsiValue() + !baseExpression.replaceAll("\\s+", "").equals(modifiedExpression));
+        return convertExpressionToParsedSyntaxUnit(modifiedExpression);
+    }
+
+    private static void calculateAssociativePropertyBasedSyntaxUnits(SyntaxUnit syntaxUnit, String baseExpression) throws Exception {
+        AssociativePropertyBasedSyntaxUnitProcessor associativePropertyBasedSyntaxUnitProcessor = new AssociativePropertyBasedSyntaxUnitProcessor(syntaxUnit);
+        List<SyntaxUnit> generatedAfterAssociativePropertySyntaxUnits = associativePropertyBasedSyntaxUnitProcessor.getProcessedSyntaxUnits();
+        HeadlinePrinter.print("Associative property", Color.GREEN);
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Provided expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
+
+        if (generatedAfterAssociativePropertySyntaxUnits != null && !generatedAfterAssociativePropertySyntaxUnits.isEmpty()) {
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Modified expressions: " + Color.DEFAULT.getAnsiValue());
+
+            for (int i = 0; i < generatedAfterAssociativePropertySyntaxUnits.size(); i++) {
+                SyntaxUnit generatedAfterAssociativePropertySyntaxUnit = generatedAfterAssociativePropertySyntaxUnits.get(i);
+                String generatedAfterAssociativePropertyExpression = getExpressionAsString(generatedAfterAssociativePropertySyntaxUnit.getSyntaxUnits());
+                System.out.println((i + 1) + ") " + generatedAfterAssociativePropertyExpression);
+            }
+        } else {
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "No modifications were made.");
+        }
+
     }
 }

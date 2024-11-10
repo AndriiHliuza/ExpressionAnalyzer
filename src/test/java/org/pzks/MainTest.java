@@ -4,6 +4,7 @@ import org.pzks.parsers.ExpressionParser;
 import org.pzks.utils.args.processor.BoolArg;
 import org.pzks.utils.args.processor.PropertyArg;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class MainTest {
@@ -109,15 +110,16 @@ class MainTest {
         String test53= "a*b - b*c - c*d - a*c*(b-d/e/f/g) - (g - h) - (i-j)";
         String test54= "a*(-1)*b";
         String test55= "exp(sin(a+b/2-pi)+a*cos(a*pi+b*pi/3-w+k*t)-5+log(2.72)/T-1)+2048+a+b*c+log(t-1)-2*log(Q)-8*d/dt*exp(t/2+H)-sin(a)/cos(a)";
-        String test56= "a-b*c+k";
+        String test56= "a + b*c + d + e*f*g + h*i + j*(k + L + m*(n-p*q+r) - s*t)";
         String test57= "-8*d/dt*exp(t/2+H)-sin(a)/cos(a)-2*log(Q)+b*c+exp(log(2.72)/T+a*cos(b*pi/3+k*t+a*pi-w)+sin(b/2+a-pi)-6)+2048+a+log(t-1)";
         String test58= "-8*d/dt*exp(t/2+H)+b*c-2*log(Q)-sin(a)/cos(a)+exp(a*cos(b*pi/3+a*pi+k*t-w)+log(2.72)/T+sin(b/2+a-pi)-6)+2048+a+log(t-1)";
+        String test59= "a*b+c*d+e*f";
         ExpressionParser.parse(
                 test56,
                 false,
                 true,
                 BoolArg.TRUE,
-                List.of(PropertyArg.COMMUTATIVE, PropertyArg.DEFAULT, PropertyArg.ASSOCIATIVE),
+                List.of(PropertyArg.DEFAULT, PropertyArg.COMMUTATIVE, PropertyArg.ASSOCIATIVE),
                 true
         );
 
@@ -210,5 +212,33 @@ class MainTest {
 //        System.out.println(Double.parseDouble("-0") == 0);
 //        Double.parseDouble("0");
 //        System.out.println(0.0/0.0);
+
+//        List<Character> elements = List.of('a', 'b', 'c');
+//        List<List<Character>> permutations = getPermutations(new ArrayList<>(elements));
+//        System.out.println("All Permutations: " + permutations);
     }
+
+//    public static List<List<Character>> getPermutations(List<Character> elements) {
+//        List<List<Character>> result = new ArrayList<>();
+//        permute(elements, 0, result);
+//        return result;
+//    }
+//
+//    private static void permute(List<Character> elements, int start, List<List<Character>> result) {
+//        if (start == elements.size() - 1) {
+//            result.add(new ArrayList<>(elements));
+//            return;
+//        }
+//        for (int i = start; i < elements.size(); i++) {
+//            swap(elements, start, i);
+//            permute(elements, start + 1, result);
+//            swap(elements, start, i);  // backtrack
+//        }
+//    }
+//
+//    private static void swap(List<Character> elements, int i, int j) {
+//        Character temp = elements.get(i);
+//        elements.set(i, elements.get(j));
+//        elements.set(j, temp);
+//    }
 }

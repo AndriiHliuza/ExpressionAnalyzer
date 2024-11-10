@@ -20,7 +20,7 @@ public class HeadlinePrinter {
     }
 
     public static void printWithBackground(String headline) {
-        int totalHeadlineLength = 60;
+        int totalHeadlineLength = 80;
         int lengthOfFirstPartOfTotalHeadline = 20 + headline.length();
         int numberOfDashesAfterHeadline = totalHeadlineLength - lengthOfFirstPartOfTotalHeadline;
         if (numberOfDashesAfterHeadline < 0) {
