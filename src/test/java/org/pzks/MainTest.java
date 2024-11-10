@@ -1,6 +1,7 @@
 package org.pzks;
 
 import org.pzks.parsers.ExpressionParser;
+import org.pzks.utils.args.processor.BoolArg;
 import org.pzks.utils.args.processor.PropertyArg;
 
 import java.util.List;
@@ -115,8 +116,9 @@ class MainTest {
                 test56,
                 false,
                 true,
+                BoolArg.TRUE,
                 List.of(PropertyArg.COMMUTATIVE, PropertyArg.DEFAULT, PropertyArg.ASSOCIATIVE),
-                false
+                true
         );
 
 //        DynamicList structureList = new DynamicList();

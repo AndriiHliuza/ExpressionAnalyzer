@@ -13,6 +13,7 @@ public class Main {
                     programArgsProcessor.getExpression(),
                     programArgsProcessor.shouldShowVerboseOutput(),
                     programArgsProcessor.shouldFixExpressionIfErrorsPresent(),
+                    programArgsProcessor.getOptimizationArg(),
                     programArgsProcessor.getPropertyArgs(),
                     programArgsProcessor.shouldBuildParallelCalculationTree()
             );

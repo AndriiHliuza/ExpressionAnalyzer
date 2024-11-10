@@ -47,6 +47,27 @@ public class ProgramArgsProcessor {
         return programKeys.contains(ProgramKey.FIX.getValue());
     }
 
+    public BoolArg getOptimizationArg() {
+        String optimizationKeyValuesPattern = "(" + ProgramKey.OPTIMIZATION.getProgramKeyArgs().stream()
+                .filter(BoolArg.class::isInstance)
+                .map(BoolArg.class::cast)
+                .map(boolArgs -> boolArgs.name().toLowerCase())
+                .collect(Collectors.joining("|")) + ")";
+        BoolArg optimizationArg = BoolArg.TRUE;
+        for (String programKey : programKeys) {
+            if (programKey.matches(ProgramKey.OPTIMIZATION.getValue() + "=" + optimizationKeyValuesPattern)) {
+                optimizationArg = Arrays.stream(programKey.split("[=,]"))
+                        .filter(programKeyComponent -> !programKeyComponent.equals(ProgramKey.OPTIMIZATION.getValue()))
+                        .map(String::toUpperCase)
+                        .map(BoolArg::valueOf)
+                        .findFirst()
+                        .orElse(BoolArg.TRUE);
+            }
+        }
+
+        return optimizationArg;
+    }
+
     public boolean shouldBuildParallelCalculationTree() {
         return programKeys.contains(ProgramKey.PARALLEL_CALCULATION_TREE.getValue());
     }
