@@ -1,5 +1,7 @@
 package org.pzks.units;
 
+import org.pzks.parsers.ExpressionParser;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,5 +84,10 @@ public class LogicalBlock extends SyntaxContainer {
                 "index='" + getIndex() + '\'' +
                 ", value='" + value + '\'' +
                 '}';
+    }
+
+    @Override
+    public String getValue() {
+        return getDetails().get("openingBracket") + ExpressionParser.getExpressionAsString(getSyntaxUnits()) + getDetails().get("closingBracket");
     }
 }

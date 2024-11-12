@@ -1,6 +1,7 @@
 package org.pzks.parsers.parallelization;
 
 import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.SyntaxUnitsProcessor;
 import org.pzks.parsers.optimizers.AdditionAndSubtractionOperationsParallelizationOptimizer;
 import org.pzks.parsers.optimizers.MultiplicationAndDivisionOperationsParallelizationOptimizer;
 import org.pzks.utils.trees.TreeNode;
@@ -25,7 +26,7 @@ public class ParallelExpressionTreeBuilder {
         warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(convertedSyntaxUnit.getSyntaxUnits());
         if (warnings.isEmpty()) {
             List<SyntaxUnit> syntaxUnits = convertedSyntaxUnit.getSyntaxUnits();
-            takeOutNumberFromLogicalBlocksWithOneElement(syntaxUnits);
+            SyntaxUnitsProcessor.takeOutNumberFromLogicalBlocksWithOneElement(syntaxUnits);
             DynamicList treeNodeList = convertSyntaxUnitsToListOfTreeNodes(syntaxUnits);
             buildTree(treeNodeList);
             if (treeNodeList.size() == 1) {
@@ -230,7 +231,7 @@ public class ParallelExpressionTreeBuilder {
     private List<String> getWarningsIfBuildingTheParallelTreeIsForbidden(List<SyntaxUnit> syntaxUnits) {
         List<String> warnings = new ArrayList<>();
         if (!isFunctionsAbsent(syntaxUnits)) {
-            warnings.add("Functions are forbidden for the expression that needs to be parallelized.");
+            warnings.add("Functions are not supported for the expression that needs to be parallelized.");
             warnings.add("Please provide each function param separately if you want to build tree for the function.");
         }
         return warnings;
@@ -263,25 +264,6 @@ public class ParallelExpressionTreeBuilder {
             }
         }
         return treeNodes;
-    }
-
-
-    private void takeOutNumberFromLogicalBlocksWithOneElement(List<SyntaxUnit> syntaxUnits) {
-        for (int i = 0; i < syntaxUnits.size(); i++) {
-            SyntaxUnit syntaxUnit = syntaxUnits.get(i);
-            if (syntaxUnit instanceof LogicalBlock) {
-                if (syntaxUnit.getSyntaxUnits().size() == 1) {
-                    SyntaxUnit syntaxUnitInLogicalBlock = syntaxUnit.getSyntaxUnits().getFirst();
-                    if (syntaxUnitInLogicalBlock instanceof Number number) {
-                        syntaxUnits.set(i, number);
-                    } else {
-                        takeOutNumberFromLogicalBlocksWithOneElement(syntaxUnitInLogicalBlock.getSyntaxUnits());
-                    }
-                } else {
-                    takeOutNumberFromLogicalBlocksWithOneElement(syntaxUnit.getSyntaxUnits());
-                }
-            }
-        }
     }
 
     private void buildTree(DynamicList treeNodes) {

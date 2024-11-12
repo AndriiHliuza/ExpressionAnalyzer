@@ -1,5 +1,7 @@
 package org.pzks.units;
 
+import org.pzks.parsers.ExpressionParser;
+
 import javax.naming.OperationNotSupportedException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,5 +39,10 @@ public class FunctionParam extends SyntaxContainer {
     @Override
     public String name() {
         return "Function parameter";
+    }
+
+    @Override
+    public String getValue() {
+        return ExpressionParser.getExpressionAsString(getSyntaxUnits());
     }
 }

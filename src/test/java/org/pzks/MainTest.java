@@ -114,12 +114,24 @@ class MainTest {
         String test57= "-8*d/dt*exp(t/2+H)-sin(a)/cos(a)-2*log(Q)+b*c+exp(log(2.72)/T+a*cos(b*pi/3+k*t+a*pi-w)+sin(b/2+a-pi)-6)+2048+a+log(t-1)";
         String test58= "-8*d/dt*exp(t/2+H)+b*c-2*log(Q)-sin(a)/cos(a)+exp(a*cos(b*pi/3+a*pi+k*t-w)+log(2.72)/T+sin(b/2+a-pi)-6)+2048+a+log(t-1)";
         String test59= "a*b+c*d+e*f";
+        String test60= "-a/k*b-a/k*c+b*c*f*j+c*i*j*d";
+
+        // a * (b+c) + b*c + c*d
+
+        // a * b + c * (a+b) + c * d
+        // a * b + c * (a+b+d)
+
+
+        String test61= "a*(b-2)+c*(b-2)";
+        String test62= "a/b";
+
+
         ExpressionParser.parse(
-                test56,
+                test60,
                 false,
                 true,
                 BoolArg.TRUE,
-                List.of(PropertyArg.DEFAULT, PropertyArg.COMMUTATIVE, PropertyArg.ASSOCIATIVE),
+                List.of(PropertyArg.DEFAULT, PropertyArg.ASSOCIATIVE),
                 true
         );
 

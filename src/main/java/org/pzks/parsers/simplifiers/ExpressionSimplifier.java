@@ -37,7 +37,7 @@ public class ExpressionSimplifier {
         return ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
     }
 
-    public void simplify() throws Exception {
+    private void simplify() throws Exception {
         combineAdjacentSyntaxUnits(syntaxUnits);
         String simplifiedExpression = ExpressionParser.getExpressionAsString(this.syntaxUnits);
         simplifiedExpression = new BasicExpressionSimplifier(simplifiedExpression)

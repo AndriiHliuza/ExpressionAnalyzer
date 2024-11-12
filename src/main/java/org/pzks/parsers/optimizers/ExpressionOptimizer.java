@@ -3,13 +3,12 @@ package org.pzks.parsers.optimizers;
 import org.pzks.parsers.ExpressionParser;
 import org.pzks.units.SyntaxUnit;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ExpressionParallelizationOptimizer {
+public class ExpressionOptimizer {
     private List<SyntaxUnit> syntaxUnits;
 
-    public ExpressionParallelizationOptimizer(SyntaxUnit syntaxUnit) throws Exception {
+    public ExpressionOptimizer(SyntaxUnit syntaxUnit) throws Exception {
         this.syntaxUnits = syntaxUnit.getSyntaxUnits();
         optimize();
     }
@@ -21,7 +20,7 @@ public class ExpressionParallelizationOptimizer {
                 .getTransformedSyntaxUnits();
     }
 
-    public SyntaxUnit getFullyOptimizedSyntaxUnit() throws Exception {
+    public SyntaxUnit getOptimizedSyntaxUnit() throws Exception {
         return ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
     }
 }
