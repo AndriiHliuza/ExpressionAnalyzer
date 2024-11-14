@@ -3,16 +3,15 @@ package org.pzks.parsers;
 import org.pzks.fixers.ExpressionFixer;
 import org.pzks.parsers.math.laws.AssociativePropertyBasedSyntaxUnitProcessor;
 import org.pzks.parsers.math.laws.CommutativePropertyBasedSyntaxUnitProcessor;
+import org.pzks.parsers.math.laws.units.SyntaxUnitExpression;
 import org.pzks.parsers.optimizers.ExpressionOptimizer;
 import org.pzks.parsers.parallelization.ParallelExpressionTreeBuilder;
+import org.pzks.units.*;
 import org.pzks.utils.*;
 import org.pzks.utils.args.processor.BoolArg;
 import org.pzks.utils.args.processor.PropertyArg;
 import org.pzks.utils.trees.TreeNode;
 import org.pzks.parsers.simplifiers.ExpressionSimplifier;
-import org.pzks.units.FunctionParam;
-import org.pzks.units.SyntaxContainer;
-import org.pzks.units.SyntaxUnit;
 import org.pzks.utils.trees.TreeSerializer;
 
 import java.io.File;
@@ -21,14 +20,7 @@ import java.util.List;
 
 public class ExpressionParser {
 
-    public static void parse(
-            String value,
-            boolean verbose,
-            boolean fixExpression,
-            BoolArg optimizationArg,
-            List<PropertyArg> propertyArgs,
-            boolean buildParallelCalculationTree
-    ) throws Exception {
+    public static void parse(String value) throws Exception {
         if (value.isBlank()) {
             System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + "\"" + " ".repeat(value.length()) + "\"");
             System.out.println(Color.RED.getAnsiValue() + "Error: " + Color.DEFAULT.getAnsiValue() + "Can't proceed with calculations. There is no expression or it contains only white spaces!");
@@ -37,7 +29,7 @@ public class ExpressionParser {
 
             System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + value);
             HeadlinePrinter.printWithBackground("Expression analysis & Optimizations...");
-            SyntaxUnitMetaDataPrinter.printTreeWithHeadline(verbose, false, parsedSyntaxUnit, "Expression Tree");
+            SyntaxUnitMetaDataPrinter.printTreeWithHeadline(GlobalSettings.CONFIGURATION.shouldShowVerboseOutput(), false, parsedSyntaxUnit, "Expression Tree");
 
             boolean isExpressionValid = calculateAndShowErrors(value, parsedSyntaxUnit);
 
@@ -47,39 +39,38 @@ public class ExpressionParser {
                 if (!isArithmeticErrorsPresent) {
                     String modifiedExpression = getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
                     printSimplifiedExpression(parsedSyntaxUnit, value);
-                    SyntaxUnitMetaDataPrinter.printTreeWithHeadline(verbose, false, parsedSyntaxUnit, "Simplified expression tree");
+                    SyntaxUnitMetaDataPrinter.printTreeWithHeadline(GlobalSettings.CONFIGURATION.shouldShowVerboseOutput(), false, parsedSyntaxUnit, "Simplified expression tree");
 
                     isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
 
                     if (!isArithmeticErrorsPresent) {
 
-                        if (optimizationArg == BoolArg.TRUE) {
+                        if (GlobalSettings.CONFIGURATION.getOptimizationArg() == BoolArg.TRUE) {
                             parsedSyntaxUnit = optimizeSyntaxUnit(parsedSyntaxUnit);
                             modifiedExpression = getExpressionAsString(parsedSyntaxUnit.getSyntaxUnits());
                             printOptimizedExpression(parsedSyntaxUnit, modifiedExpression);
-                            SyntaxUnitMetaDataPrinter.printTreeWithHeadline(verbose, false, parsedSyntaxUnit, "Optimized expression tree");
+                            SyntaxUnitMetaDataPrinter.printTreeWithHeadline(GlobalSettings.CONFIGURATION.shouldShowVerboseOutput(), false, parsedSyntaxUnit, "Optimized expression tree");
                         }
 
                         isArithmeticErrorsPresent = detectArithmeticErrors(parsedSyntaxUnit);
 
-                        if (propertyArgs.isEmpty()) {
+                        if (GlobalSettings.CONFIGURATION.getPropertyArgs().isEmpty()) {
                             if (!isArithmeticErrorsPresent) {
-                                if (buildParallelCalculationTree) {
+                                if (GlobalSettings.CONFIGURATION.shouldBuildParallelCalculationTree()) {
                                     buildParallelCalculationTree(parsedSyntaxUnit, "tree.json");
                                 }
                             }
                         } else {
                             propertyProcessing(
                                     parsedSyntaxUnit,
-                                    propertyArgs,
+                                    GlobalSettings.CONFIGURATION.getPropertyArgs(),
                                     isArithmeticErrorsPresent,
-                                    buildParallelCalculationTree,
                                     modifiedExpression
                             );
                         }
                     }
                 }
-            } else if (fixExpression) {
+            } else if (GlobalSettings.CONFIGURATION.shouldFixExpressions()) {
                 fixExpression(value, parsedSyntaxUnit);
             }
 
@@ -252,20 +243,23 @@ public class ExpressionParser {
             String messageUponSaving = isSuccessfullySaved ? "Tree was saved to '" + savedFileLocation + "'" : "Oops, something went wrong. File wasn't saved.";
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + messageUponSaving);
         } else {
-            System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "The provided expression is not supported for building the parallel tree!");
-            int maxWarningLength = warnings.stream()
-                    .mapToInt(String::length)
-                    .max()
-                    .orElse(20);
-            maxWarningLength = Math.max(maxWarningLength, 29);
+            if (GlobalSettings.CONFIGURATION.shouldShowWarnings()) {
+                HeadlinePrinter.print("Tree building info", Color.GREEN);
+                System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "The provided expression is not supported for building the parallel tree!");
+                int maxWarningLength = warnings.stream()
+                        .mapToInt(String::length)
+                        .max()
+                        .orElse(20);
+                maxWarningLength = Math.max(maxWarningLength, 29);
 
-            System.out.println("-".repeat(10) + Color.YELLOW.getAnsiValue() + "Warning details" + Color.DEFAULT.getAnsiValue() + "-".repeat(maxWarningLength + 6 - 25));
-            for (String warning : warnings) {
-                int warningLength = warning.length();
-                int numberOfSpacesToAddTOTheOutput = maxWarningLength - warningLength;
-                System.out.println("| - " + warning + " ".repeat(numberOfSpacesToAddTOTheOutput) + " |");
+                System.out.println("-".repeat(10) + Color.YELLOW.getAnsiValue() + "Warning details" + Color.DEFAULT.getAnsiValue() + "-".repeat(maxWarningLength + 6 - 25));
+                for (String warning : warnings) {
+                    int warningLength = warning.length();
+                    int numberOfSpacesToAddTOTheOutput = maxWarningLength - warningLength;
+                    System.out.println("| - " + warning + " ".repeat(numberOfSpacesToAddTOTheOutput) + " |");
+                }
+                System.out.println("-".repeat(maxWarningLength + 6));
             }
-            System.out.println("-".repeat(maxWarningLength + 6));
         }
 
     }
@@ -274,7 +268,6 @@ public class ExpressionParser {
             SyntaxUnit syntaxUnit,
             List<PropertyArg> propertyArgs,
             boolean isArithmeticErrorsPresent,
-            boolean buildParallelCalculationTree,
             String expressionBeforeProcessingProperty
     ) throws Exception {
         HeadlinePrinter.printWithBackground("Property processing...");
@@ -286,7 +279,7 @@ public class ExpressionParser {
                         HeadlinePrinter.print("Default property", Color.GREEN);
                         System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Provided expression: " + Color.DEFAULT.getAnsiValue() + expressionBeforeProcessingProperty);
                         System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "Nothing to modify");
-                        if (buildParallelCalculationTree) {
+                        if (GlobalSettings.CONFIGURATION.shouldBuildParallelCalculationTree()) {
                             buildParallelCalculationTree(syntaxUnitToModifyAccordingToPropertyValue, "tree.json");
                         }
                     }
@@ -295,7 +288,7 @@ public class ExpressionParser {
                     SyntaxUnit syntaxUnitToModifyAccordingToPropertyValue = convertExpressionToParsedSyntaxUnit(getExpressionAsString(syntaxUnit.getSyntaxUnits()));
                     if (!isArithmeticErrorsPresent) {
                         syntaxUnitToModifyAccordingToPropertyValue = calculateCommutativePropertyBasedSyntaxUnit(syntaxUnitToModifyAccordingToPropertyValue, expressionBeforeProcessingProperty);
-                        if (buildParallelCalculationTree) {
+                        if (GlobalSettings.CONFIGURATION.shouldBuildParallelCalculationTree()) {
                             buildParallelCalculationTree(syntaxUnitToModifyAccordingToPropertyValue, "commutative-tree.json");
                         }
                     }
@@ -305,8 +298,9 @@ public class ExpressionParser {
                     if (!isArithmeticErrorsPresent) {
                         calculateAssociativePropertyBasedSyntaxUnits(syntaxUnitToModifyAccordingToPropertyValue, expressionBeforeProcessingProperty);
 
-                        if (buildParallelCalculationTree) {
-                            System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() +
+                        if (GlobalSettings.CONFIGURATION.shouldShowWarnings()) {
+                            HeadlinePrinter.print("Tree building info", Color.GREEN);
+                            System.out.println(Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() +
                                     "Tree building is not supported for associative property " +
                                     "due to potentially large number of expressions!");
 
@@ -333,19 +327,20 @@ public class ExpressionParser {
     }
 
     private static void calculateAssociativePropertyBasedSyntaxUnits(SyntaxUnit syntaxUnit, String baseExpression) throws Exception {
+        HeadlinePrinter.print("Associative property", Color.GREEN);
         AssociativePropertyBasedSyntaxUnitProcessor associativePropertyBasedSyntaxUnitProcessor = new AssociativePropertyBasedSyntaxUnitProcessor(syntaxUnit);
         SyntaxUnitExpression generatedAfterAssociativePropertySyntaxUnitExpression = associativePropertyBasedSyntaxUnitProcessor.getSyntaxUnitExpression();
-        HeadlinePrinter.print("Associative property", Color.GREEN);
         System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Provided expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
 
         if (generatedAfterAssociativePropertySyntaxUnitExpression != null && !generatedAfterAssociativePropertySyntaxUnitExpression.getSyntaxUnitExpressions().isEmpty()) {
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Generated expressions: " + Color.DEFAULT.getAnsiValue() + "\n");
             generatedAfterAssociativePropertySyntaxUnitExpression.printTreeOfDependentSyntaxUnitExpressions();
+            System.out.println();
         } else {
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "No modifications were made.");
         }
 
-        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Number of generated expressions: " + Color.DEFAULT.getAnsiValue() + associativePropertyBasedSyntaxUnitProcessor.getNumberOfGeneratedExpressions() + "\n");
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Total number of generated expressions: " + Color.DEFAULT.getAnsiValue() + associativePropertyBasedSyntaxUnitProcessor.getNumberOfGeneratedExpressions() + "\n");
 
     }
 }

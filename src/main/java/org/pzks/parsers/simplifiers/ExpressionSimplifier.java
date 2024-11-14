@@ -137,13 +137,11 @@ public class ExpressionSimplifier {
                             case "*" -> {
                                 if (i - 2 >= 0) {
                                     SyntaxUnit previousOperationAsSyntaxUnit = syntaxUnits.get(i - 1);
-                                    if (previousOperationAsSyntaxUnit.getValue().matches("[+\\-/]")) {
+                                    if (previousOperationAsSyntaxUnit.getValue().equals("/")) {
                                         syntaxUnits.subList(i, i + 3).clear();
                                         syntaxUnits.add(i, new Number(0, "1"));
+                                        previousOperationAsSyntaxUnit.setValue("*");
                                     }
-                                } else {
-                                    syntaxUnits.subList(i, i + 3).clear();
-                                    syntaxUnits.add(i, new Number(0, "1"));
                                 }
                             }
                         }

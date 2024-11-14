@@ -93,6 +93,10 @@ public class ProgramArgsProcessor {
         return propertyArgs;
     }
 
+    public boolean shouldShowWarnings() {
+        return !programKeys.contains(ProgramKey.NO_WARNINGS.getValue());
+    }
+
     public String getExpression() {
         return programKeys.getLast();
     }

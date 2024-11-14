@@ -27,7 +27,8 @@ public enum ProgramKey {
             Stream.of(PropertyArg.values())
                     .map(value -> value.toString().toLowerCase())
                     .collect(Collectors.joining(",")))
-    );
+    ),
+    NO_WARNINGS("--no-warnings", "Turns off any warnings");
 
     private final String value;
     private List<ProgramKeyArg> programKeyArgs;

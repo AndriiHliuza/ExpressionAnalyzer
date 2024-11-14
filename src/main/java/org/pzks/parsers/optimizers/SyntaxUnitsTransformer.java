@@ -40,39 +40,72 @@ public class SyntaxUnitsTransformer {
             if (currentSyntaxUnit instanceof Operation && currentSyntaxUnit.getValue().matches("[+\\-]") && i + 1 < syntaxUnits.size()) {
                 SyntaxUnit nextSyntaxUnit = syntaxUnits.get(i + 1);
                 if (nextSyntaxUnit instanceof LogicalBlock) {
-                    List<SyntaxUnit> nextSyntaxUnitSyntaxUnits = nextSyntaxUnit.getSyntaxUnits();
-                    syntaxUnits.remove(i + 1);
-                    switch (currentSyntaxUnit.getValue()) {
-                        case "+" -> syntaxUnits.addAll(i + 1, nextSyntaxUnitSyntaxUnits);
-                        case "-" -> {
-                            List<SyntaxUnit> modifiedByMultiplicationsByMinusOperatorSyntaxUnits = new ArrayList<>();
-                            for (SyntaxUnit syntaxUnit : nextSyntaxUnitSyntaxUnits) {
-                                if (syntaxUnit instanceof Operation && syntaxUnit.getValue().matches("[+\\-]")) {
-                                    switch (syntaxUnit.getValue()) {
-                                        case "+" -> syntaxUnit.setValue("-");
-                                        case "-" -> syntaxUnit.setValue("+");
-                                    }
-                                    modifiedByMultiplicationsByMinusOperatorSyntaxUnits.add(syntaxUnit);
-                                } else {
-                                    modifiedByMultiplicationsByMinusOperatorSyntaxUnits.add(syntaxUnit);
-                                }
-                            }
-                            syntaxUnits.addAll(i + 1, modifiedByMultiplicationsByMinusOperatorSyntaxUnits);
+                    if (i + 2 < syntaxUnits.size()) {
+                        SyntaxUnit operationsAfterLogicalBlock = syntaxUnits.get(i + 2);
+                        if (operationsAfterLogicalBlock instanceof Operation && !operationsAfterLogicalBlock.getValue().matches("[*/]")) {
+                            openBracketsWithSyntaxUnitsModifications(i, currentSyntaxUnit, nextSyntaxUnit, syntaxUnits);
+                        } else {
+                            openBracketsAfterPlusOrMinusOperations(currentSyntaxUnit.getSyntaxUnits());
                         }
+                    } else {
+                        openBracketsWithSyntaxUnitsModifications(i, currentSyntaxUnit, nextSyntaxUnit, syntaxUnits);
                     }
                 }
             } else if (currentSyntaxUnit instanceof SyntaxContainer) {
                 if (currentSyntaxUnit instanceof LogicalBlock) {
                     if (i == 0) {
-                        List<SyntaxUnit> currenSyntaxUnitSyntaxUnits = currentSyntaxUnit.getSyntaxUnits();
-                        syntaxUnits.removeFirst();
-                        syntaxUnits.addAll(i, currenSyntaxUnitSyntaxUnits);
+                        if (i + 1 < syntaxUnits.size()) {
+                            SyntaxUnit operationsAfterLogicalBlock = syntaxUnits.get(i + 1);
+                            if (operationsAfterLogicalBlock instanceof Operation && !operationsAfterLogicalBlock.getValue().matches("[*/]")) {
+                                List<SyntaxUnit> currenSyntaxUnitSyntaxUnits = currentSyntaxUnit.getSyntaxUnits();
+                                syntaxUnits.removeFirst();
+                                syntaxUnits.addAll(i, currenSyntaxUnitSyntaxUnits);
+                                i--;
+                            } else {
+                                openBracketsAfterPlusOrMinusOperations(currentSyntaxUnit.getSyntaxUnits());
+                            }
+                        } else {
+                            List<SyntaxUnit> currenSyntaxUnitSyntaxUnits = currentSyntaxUnit.getSyntaxUnits();
+                            syntaxUnits.removeFirst();
+                            syntaxUnits.addAll(i, currenSyntaxUnitSyntaxUnits);
+                            i--;
+                        }
                     } else {
                         openBracketsAfterPlusOrMinusOperations(currentSyntaxUnit.getSyntaxUnits());
                     }
                 } else {
                     openBracketsAfterPlusOrMinusOperations(currentSyntaxUnit.getSyntaxUnits());
                 }
+            }
+        }
+    }
+
+    private void openBracketsWithSyntaxUnitsModifications(int i, SyntaxUnit currentSyntaxUnit, SyntaxUnit nextSyntaxUnit, List<SyntaxUnit> syntaxUnits) {
+        List<SyntaxUnit> nextSyntaxUnitSyntaxUnits = nextSyntaxUnit.getSyntaxUnits();
+        syntaxUnits.remove(i + 1);
+        switch (currentSyntaxUnit.getValue()) {
+            case "+" -> {
+                SyntaxUnit firstSyntaxUnitInNextSyntaxUnit = nextSyntaxUnitSyntaxUnits.getFirst();
+                if (firstSyntaxUnitInNextSyntaxUnit instanceof Operation operation && operation.getValue().equals("-")) {
+                    currentSyntaxUnit.setValue("-");
+                    nextSyntaxUnitSyntaxUnits.removeFirst();
+                }
+                syntaxUnits.addAll(i + 1, nextSyntaxUnitSyntaxUnits);
+            }
+            case "-" -> {
+                List<SyntaxUnit> modifiedByMultiplicationsByMinusOperatorSyntaxUnits = new ArrayList<>();
+                for (SyntaxUnit syntaxUnit : nextSyntaxUnitSyntaxUnits) {
+                    if (syntaxUnit instanceof Operation && syntaxUnit.getValue().matches("[+\\-]")) {
+                        switch (syntaxUnit.getValue()) {
+                            case "+" -> syntaxUnit.setValue("-");
+                            case "-" -> syntaxUnit.setValue("+");
+                        }
+                        modifiedByMultiplicationsByMinusOperatorSyntaxUnits.add(syntaxUnit);
+                    } else {
+                        modifiedByMultiplicationsByMinusOperatorSyntaxUnits.add(syntaxUnit);
+                    }
+                }
+                syntaxUnits.addAll(i + 1, modifiedByMultiplicationsByMinusOperatorSyntaxUnits);
             }
         }
     }

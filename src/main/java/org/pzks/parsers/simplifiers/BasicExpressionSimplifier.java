@@ -1,6 +1,10 @@
 package org.pzks.parsers.simplifiers;
 
 
+import org.pzks.parsers.ExpressionParser;
+import org.pzks.units.LogicalBlock;
+import org.pzks.units.SyntaxUnit;
+
 public class BasicExpressionSimplifier {
     private String expression;
 
@@ -65,11 +69,13 @@ public class BasicExpressionSimplifier {
         return this;
     }
 
-    public BasicExpressionSimplifier removeOuterBracketsForRootExpression() {
-        if (expression.startsWith("(") && expression.endsWith(")")) {
-            expression = expression.replaceAll("^\\(", "");
-            expression = expression.replaceAll("\\)$", "");
+    public BasicExpressionSimplifier removeOuterBracketsForRootExpression() throws Exception {
+        SyntaxUnit rootSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(expression);
+        if (rootSyntaxUnit instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
+            rootSyntaxUnit.setSyntaxUnits(logicalBlock.getSyntaxUnits());
         }
+        expression = ExpressionParser.getExpressionAsString(rootSyntaxUnit.getSyntaxUnits());
+
         return this;
     }
 }

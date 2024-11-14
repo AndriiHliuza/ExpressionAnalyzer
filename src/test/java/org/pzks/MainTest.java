@@ -1,6 +1,10 @@
 package org.pzks;
 
 import org.pzks.parsers.ExpressionParser;
+import org.pzks.utils.Color;
+import org.pzks.utils.Configuration;
+import org.pzks.utils.GlobalSettings;
+import org.pzks.utils.Statistics;
 import org.pzks.utils.args.processor.BoolArg;
 import org.pzks.utils.args.processor.PropertyArg;
 
@@ -114,7 +118,7 @@ class MainTest {
         String test57= "-8*d/dt*exp(t/2+H)-sin(a)/cos(a)-2*log(Q)+b*c+exp(log(2.72)/T+a*cos(b*pi/3+k*t+a*pi-w)+sin(b/2+a-pi)-6)+2048+a+log(t-1)";
         String test58= "-8*d/dt*exp(t/2+H)+b*c-2*log(Q)-sin(a)/cos(a)+exp(a*cos(b*pi/3+a*pi+k*t-w)+log(2.72)/T+sin(b/2+a-pi)-6)+2048+a+log(t-1)";
         String test59= "a*b+c*d+e*f";
-        String test60= "-a/k*b-a/k*c+b*c*f*j+c*i*j*d";
+        String test60= "-a/k*b-a/k*c+f(s, d+1+g*d)+b*c*f*j+c*i*j*d+f(s,d + 1+g*d)*f";
 
         // a * (b+c) + b*c + c*d
 
@@ -125,16 +129,48 @@ class MainTest {
         String test61= "a*(b-2)+c*(b-2)";
         String test62= "a/b";
 
+        String test63= "-a/k*b-a/k*c+b*c*f*j+c*i*j*d";
+        String test64= "(b-2)+(a+c)";
+        String test65= "(b*d+f*b+b*g)+(a+c)";
+        String test66= "f*(b*d+f*b+b*g)+f*(a+c)";
 
-        ExpressionParser.parse(
-                test60,
+
+        String test67= "a-b*k+b*t-f*f*5.9+f*q+g*f*5.9-g*q-f/(d+q-w)-g/(d+q-w)";
+
+        String test68= "(a-5)+(a-5)*6";
+        String test69= "d+(-5)";
+
+        String test70= "f*f*5.9+f*q";
+        String test71= "a*b(a*c+b*c, d*k+f*k)";
+        String test72= "a/k-c/k+2/k-t";
+
+        String test73= "a/(b-1)-c/(b-1)+2/(b-1)-t";
+        long startTime = System.nanoTime();
+
+        Configuration configuration = new Configuration(
                 false,
                 true,
                 BoolArg.TRUE,
                 List.of(PropertyArg.DEFAULT, PropertyArg.ASSOCIATIVE),
-                true
+                true,
+                false
         );
+        GlobalSettings.configure(configuration);
 
+        ExpressionParser.parse(test72);
+        long endTime = System.nanoTime();
+
+        Statistics.displayTime(startTime, endTime);
+
+//        for (int i = 0; i <= 100; i += 10) {
+//            // Print percentage with \r to overwrite the line
+//            System.out.print("\r" + i + "% completed");
+//
+//            // Simulate some work with sleep
+//            Thread.sleep(2000);
+//        }
+//
+//        System.out.println("\nDone!");  // Move to a new line when complete
 //        DynamicList structureList = new DynamicList();
 //        structureList.add(new TreeNode());
 //        structureList.add(new DynamicList());
