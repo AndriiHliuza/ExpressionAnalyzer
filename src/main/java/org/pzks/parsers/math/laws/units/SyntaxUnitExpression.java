@@ -3,6 +3,8 @@ package org.pzks.parsers.math.laws.units;
 import org.pzks.parsers.ExpressionParser;
 import org.pzks.units.SyntaxUnit;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,7 @@ public class SyntaxUnitExpression {
     private SyntaxUnit syntaxUnit;
     private List<SyntaxUnitExpression> syntaxUnitExpressions = new ArrayList<>();
     private final StringBuilder spaceBuilder = new StringBuilder();
+    private final StringBuilder fileSpaceBuilder = new StringBuilder();
 
     public SyntaxUnitExpression(SyntaxUnit syntaxUnit) {
         this.syntaxUnit = syntaxUnit;
@@ -23,7 +26,7 @@ public class SyntaxUnitExpression {
         this.syntaxUnit = syntaxUnit;
     }
 
-    public List<SyntaxUnitExpression> getSyntaxUnitExpressions() {
+    public synchronized List<SyntaxUnitExpression> getSyntaxUnitExpressions() {
         return syntaxUnitExpressions;
     }
 
@@ -33,7 +36,7 @@ public class SyntaxUnitExpression {
 
     public void printTreeOfDependentSyntaxUnitExpressions() throws Exception {
         spaceBuilder.append(" ".repeat(5));
-        printTreeOfDependentSyntaxUnitExpressions(getSyntaxUnitExpressions(), "");
+        printTreeOfDependentSyntaxUnitExpressions(syntaxUnitExpressions, "");
     }
 
     private void printTreeOfDependentSyntaxUnitExpressions(List<SyntaxUnitExpression> syntaxUnitExpressions, String levelPrefix) throws Exception {
@@ -45,6 +48,26 @@ public class SyntaxUnitExpression {
                 spaceBuilder.append(" ".repeat(5));
                 printTreeOfDependentSyntaxUnitExpressions(internalSyntaxUnitExpressions, levelPrefix + (i + 1) + ".");
                 spaceBuilder.setLength(spaceBuilder.length() - 5);
+            }
+        }
+    }
+
+    public void saveTreeOfDependentSyntaxUnitExpressionsToFile(String filePath) throws Exception {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            saveTreeOfDependentSyntaxUnitExpressions(syntaxUnitExpressions, "", writer);
+        }
+    }
+
+    private void saveTreeOfDependentSyntaxUnitExpressions(List<SyntaxUnitExpression> syntaxUnitExpressions, String levelPrefix, BufferedWriter writer) throws Exception {
+        for (int i = 0; i < syntaxUnitExpressions.size(); i++) {
+            SyntaxUnitExpression syntaxUnitExpression = syntaxUnitExpressions.get(i);
+            writer.write(fileSpaceBuilder + levelPrefix + (i + 1) + ") " + ExpressionParser.getExpressionAsString(syntaxUnitExpression.syntaxUnit.getSyntaxUnits()) + "\n\n");
+
+            if (!syntaxUnitExpression.getSyntaxUnitExpressions().isEmpty()) {
+                List<SyntaxUnitExpression> internalSyntaxUnitExpressions = syntaxUnitExpression.getSyntaxUnitExpressions();
+                fileSpaceBuilder.append(" ".repeat(5));
+                saveTreeOfDependentSyntaxUnitExpressions(internalSyntaxUnitExpressions, levelPrefix + (i + 1) + ".", writer);
+                fileSpaceBuilder.setLength(fileSpaceBuilder.length() - 5);
             }
         }
     }

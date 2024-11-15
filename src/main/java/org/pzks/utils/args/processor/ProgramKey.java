@@ -1,5 +1,7 @@
 package org.pzks.utils.args.processor;
 
+import org.pzks.utils.GlobalSettings;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -13,25 +15,38 @@ public enum ProgramKey {
             To turn off optimization, set --optimize=false
             Available properties: %s.
             """.formatted(
-                    Stream.of(BoolArg.values())
-                            .map(value -> value.toString().toLowerCase())
-                            .collect(Collectors.joining(","))
+            Stream.of(BoolArg.values())
+                    .map(value -> value.toString().toLowerCase())
+                    .collect(Collectors.joining(","))
     )
     ),
     PARALLEL_CALCULATION_TREE("--tree", "Build parallel calculation tree of the expression."),
     PROPERTY("--property", List.of(PropertyArg.values()), """
-    Set property to use.
-    Available properties: %s.
-    Usage: --property=<value>.
-    """.formatted(
+            Set property to use.
+            Available properties: %s.
+            Usage: --property=<value>.
+            """.formatted(
             Stream.of(PropertyArg.values())
                     .map(value -> value.toString().toLowerCase())
                     .collect(Collectors.joining(",")))
     ),
-    NO_WARNINGS("--no-warnings", "Turns off any warnings");
+    NUMBER_OF_PROPERTY_BASED_EXPRESSIONS_GENERATED("--expr-gen-limit", """
+            Set number of generated expressions on property processing stage.
+            Usage: --expr-gen-limit=<number>.
+            Note: Default is up to ~%s expressions if not specified.
+            """.formatted(GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT)
+    ),
+    NO_LIMIT_FOR_NUMBER_OF_PROPERTY_BASED_EXPRESSIONS_GENERATED("--expr-gen-no-limit", """
+            Removes default limit of %s expressions for number of generated expressions on property processing stage.
+            Note: This may result in large CPU and RAM consumption!
+            """.formatted(GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT)
+    ),
+    NO_WARNINGS("--no-warnings", "Turns off any warnings"),
+    HELP("--help", "Show manual");
 
     private final String value;
     private List<ProgramKeyArg> programKeyArgs;
+    private int numberParam;
     private final String description;
 
     ProgramKey(String value, String description) {

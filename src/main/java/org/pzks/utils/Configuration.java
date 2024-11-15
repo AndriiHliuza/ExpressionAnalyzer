@@ -10,43 +10,59 @@ import java.util.List;
 public class Configuration {
 
     private final boolean showVerboseOutput;
-    private final boolean shouldFixExpressions;
+    private final boolean shouldFixExpression;
     private final BoolArg optimizationArg;
     private final List<PropertyArg> propertyArgs;
     private final boolean buildParallelCalculationTree;
+    private final long numberOfGeneratedExpressionsLimit;
     private final boolean showWarnings;
 
     public Configuration() {
         showVerboseOutput = false;
-        shouldFixExpressions = true;
+        shouldFixExpression = true;
         optimizationArg = BoolArg.TRUE;
         propertyArgs = new ArrayList<>();
         buildParallelCalculationTree = false;
+        numberOfGeneratedExpressionsLimit = -1L;
         showWarnings = true;
     }
 
     public Configuration(ProgramArgsProcessor programArgsProcessor) {
         showVerboseOutput = programArgsProcessor.shouldShowVerboseOutput();
-        shouldFixExpressions = programArgsProcessor.shouldFixExpressionIfErrorsPresent();
+        shouldFixExpression = programArgsProcessor.shouldFixExpressionIfErrorsPresent();
         optimizationArg = programArgsProcessor.getOptimizationArg();
         propertyArgs = programArgsProcessor.getPropertyArgs();
         buildParallelCalculationTree = programArgsProcessor.shouldBuildParallelCalculationTree();
+        if (programArgsProcessor.shouldRemoveLimitOfGeneratedExpressionsBasedOnProperty()) {
+            numberOfGeneratedExpressionsLimit = Long.MAX_VALUE;
+            GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT = Long.MAX_VALUE;
+        } else {
+            numberOfGeneratedExpressionsLimit = programArgsProcessor.getLimitNumberOfGeneratedExpressionsBasedOnProperty();
+            if (numberOfGeneratedExpressionsLimit != -1L && GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT != numberOfGeneratedExpressionsLimit) {
+                GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT = numberOfGeneratedExpressionsLimit;
+            }
+        }
         showWarnings = programArgsProcessor.shouldShowWarnings();
     }
 
     public Configuration(
             boolean showVerboseOutput,
-            boolean shouldFixExpressions,
+            boolean shouldFixExpression,
             BoolArg optimizationArg,
             List<PropertyArg> propertyArgs,
             boolean buildParallelCalculationTree,
+            long numberOfGeneratedExceptionsLimit,
             boolean showWarnings
     ) {
         this.showVerboseOutput = showVerboseOutput;
-        this.shouldFixExpressions = shouldFixExpressions;
+        this.shouldFixExpression = shouldFixExpression;
         this.optimizationArg = optimizationArg;
         this.propertyArgs = propertyArgs;
         this.buildParallelCalculationTree = buildParallelCalculationTree;
+        this.numberOfGeneratedExpressionsLimit = numberOfGeneratedExceptionsLimit;
+        if (numberOfGeneratedExpressionsLimit != -1L && GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT != numberOfGeneratedExceptionsLimit) {
+            GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT = numberOfGeneratedExceptionsLimit;
+        }
         this.showWarnings = showWarnings;
     }
 
@@ -54,8 +70,8 @@ public class Configuration {
         return showVerboseOutput;
     }
 
-    public boolean shouldFixExpressions() {
-        return shouldFixExpressions;
+    public boolean shouldFixExpression() {
+        return shouldFixExpression;
     }
 
     public BoolArg getOptimizationArg() {
@@ -68,6 +84,10 @@ public class Configuration {
 
     public boolean shouldBuildParallelCalculationTree() {
         return buildParallelCalculationTree;
+    }
+
+    public long getNumberOfGeneratedExpressionsLimit() {
+        return numberOfGeneratedExpressionsLimit;
     }
 
     public boolean shouldShowWarnings() {

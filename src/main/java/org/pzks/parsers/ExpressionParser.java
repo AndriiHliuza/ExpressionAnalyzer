@@ -70,7 +70,7 @@ public class ExpressionParser {
                         }
                     }
                 }
-            } else if (GlobalSettings.CONFIGURATION.shouldFixExpressions()) {
+            } else if (GlobalSettings.CONFIGURATION.shouldFixExpression()) {
                 fixExpression(value, parsedSyntaxUnit);
             }
 
@@ -296,6 +296,14 @@ public class ExpressionParser {
                 case ASSOCIATIVE -> {
                     SyntaxUnit syntaxUnitToModifyAccordingToPropertyValue = convertExpressionToParsedSyntaxUnit(getExpressionAsString(syntaxUnit.getSyntaxUnits()));
                     if (!isArithmeticErrorsPresent) {
+                        if (GlobalSettings.CONFIGURATION.getNumberOfGeneratedExpressionsLimit() == Long.MAX_VALUE) {
+                            System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "Removing limit for number of generated expressions may result in large CPU and RAM consumption!");
+
+                            if (!ProgramExecutionUtil.confirmAndProceed()) {
+                                return;
+                            }
+                        }
+
                         calculateAssociativePropertyBasedSyntaxUnits(syntaxUnitToModifyAccordingToPropertyValue, expressionBeforeProcessingProperty);
 
                         if (GlobalSettings.CONFIGURATION.shouldShowWarnings()) {
@@ -328,14 +336,22 @@ public class ExpressionParser {
 
     private static void calculateAssociativePropertyBasedSyntaxUnits(SyntaxUnit syntaxUnit, String baseExpression) throws Exception {
         HeadlinePrinter.print("Associative property", Color.GREEN);
+        if (GlobalSettings.CONFIGURATION.getNumberOfGeneratedExpressionsLimit() == -1L) {
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Not specified limit for number of generated expressions.");
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Falling back to default limit of ~" + GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT + " expressions.");
+        } else if (GlobalSettings.CONFIGURATION.getNumberOfGeneratedExpressionsLimit() == Long.MAX_VALUE) {
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Limit for number of generated expressions was removed.");
+        } else if (GlobalSettings.CONFIGURATION.getNumberOfGeneratedExpressionsLimit() != GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "New limit for number of generated expressions set to ~" + GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT + " expressions.");
+        }
+
         AssociativePropertyBasedSyntaxUnitProcessor associativePropertyBasedSyntaxUnitProcessor = new AssociativePropertyBasedSyntaxUnitProcessor(syntaxUnit);
         SyntaxUnitExpression generatedAfterAssociativePropertySyntaxUnitExpression = associativePropertyBasedSyntaxUnitProcessor.getSyntaxUnitExpression();
         System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Provided expression: " + Color.DEFAULT.getAnsiValue() + baseExpression);
 
         if (generatedAfterAssociativePropertySyntaxUnitExpression != null && !generatedAfterAssociativePropertySyntaxUnitExpression.getSyntaxUnitExpressions().isEmpty()) {
-            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Generated expressions: " + Color.DEFAULT.getAnsiValue() + "\n");
-            generatedAfterAssociativePropertySyntaxUnitExpression.printTreeOfDependentSyntaxUnitExpressions();
-            System.out.println();
+            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Generated expressions were saved to ./associative-expressions.txt\n");
+            generatedAfterAssociativePropertySyntaxUnitExpression.saveTreeOfDependentSyntaxUnitExpressionsToFile("associative-expressions.txt");
         } else {
             System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Status: " + Color.DEFAULT.getAnsiValue() + "No modifications were made.");
         }

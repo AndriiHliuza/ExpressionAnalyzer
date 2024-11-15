@@ -1,6 +1,7 @@
 package org.pzks.utils.args.processor;
 
 import org.pzks.utils.Color;
+import org.pzks.utils.GlobalSettings;
 import org.pzks.utils.HeadlinePrinter;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class ProgramArgsProcessor {
         programKeysPattern.deleteCharAt(programKeysPattern.length() - 1);
         programKeysPattern.append(")$");
 
-        if (programKeys.isEmpty() || getExpression().matches(programKeysPattern.toString())) {
+        if (programKeys.isEmpty() || getExpression().matches(programKeysPattern.toString()) || programKeys.contains(ProgramKey.HELP.getValue())) {
             HeadlinePrinter.print("Manual", Color.GREEN);
             System.out.println(Color.YELLOW.getAnsiValue() + "Available keys:\n" + Color.DEFAULT.getAnsiValue());
             for (int i = 0; i < ProgramKey.values().length; i++) {
@@ -95,6 +96,23 @@ public class ProgramArgsProcessor {
 
     public boolean shouldShowWarnings() {
         return !programKeys.contains(ProgramKey.NO_WARNINGS.getValue());
+    }
+
+    public long getLimitNumberOfGeneratedExpressionsBasedOnProperty() {
+        for (String programKey : programKeys) {
+            if (programKey.matches("^" + ProgramKey.NUMBER_OF_PROPERTY_BASED_EXPRESSIONS_GENERATED.getValue() + "=" + "\\d+$")) {
+                return Arrays.stream(programKey.split("="))
+                        .filter(programKeyComponent -> !programKeyComponent.equals(ProgramKey.NUMBER_OF_PROPERTY_BASED_EXPRESSIONS_GENERATED.getValue()))
+                        .map(Long::parseLong)
+                        .findFirst()
+                        .orElse(-1L);
+            }
+        }
+        return -1L;
+    }
+
+    public boolean shouldRemoveLimitOfGeneratedExpressionsBasedOnProperty() {
+        return programKeys.contains(ProgramKey.NO_LIMIT_FOR_NUMBER_OF_PROPERTY_BASED_EXPRESSIONS_GENERATED.getValue());
     }
 
     public String getExpression() {

@@ -9,18 +9,14 @@ import org.pzks.parsers.simplifiers.ExpressionSimplifier;
 import org.pzks.units.*;
 import org.pzks.units.Number;
 import org.pzks.utils.Color;
+import org.pzks.utils.GlobalSettings;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AssociativePropertyBasedSyntaxUnitProcessor {
     private List<SyntaxUnit> syntaxUnits;
     private SyntaxUnitExpression syntaxUnitExpression;
-    private List<String> allGeneratedSyntaxUnits = new ArrayList<>();
-    private int limitNumberOfGeneratedExpressions = Integer.MAX_VALUE;
-//    private int limitNumberOfGeneratedExpressions = 10;
+    private Set<String> allGeneratedSyntaxUnits = new HashSet<>();
 
     public AssociativePropertyBasedSyntaxUnitProcessor(SyntaxUnit syntaxUnit) throws Exception {
         this.syntaxUnits = syntaxUnit.getSyntaxUnits();
@@ -82,7 +78,7 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
         return listOfSyntaxUnitsGroups;
     }
 
-    private List<List<SyntaxUnit>> generateExpressionsAccordingToAssociativePropertyFromListOfSyntaxUnitsGroups(List<List<SyntaxUnit>> listOfSyntaxUnitsGroups) {
+    private List<List<SyntaxUnit>> generateExpressionsAccordingToAssociativePropertyFromListOfSyntaxUnitsGroups(List<List<SyntaxUnit>> listOfSyntaxUnitsGroups) throws Exception {
         List<List<SyntaxUnit>> listOfSyntaxUnitsAsExpressions = new ArrayList<>();
         for (int i = 0; i < listOfSyntaxUnitsGroups.size(); i++) {
             List<SyntaxUnit> currentSyntaxUnitsGroup = listOfSyntaxUnitsGroups.get(i);
@@ -92,20 +88,33 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
                 List<SyntaxUnit> commonSyntaxUnitsExcludingOperations = findCommonSyntaxUnitsInTwoSyntaxUnitsGroups(currentSyntaxUnitsGroup, followingSyntaxUnitGroup);
 
                 if (!commonSyntaxUnitsExcludingOperations.isEmpty()) {
-                    List<SyntaxUnit> currentSyntaxUnitsGroupExcludingCommonElements = createSyntaxUnitsGroupExcludingCommonElements(currentSyntaxUnitsGroup, commonSyntaxUnitsExcludingOperations);
-                    List<SyntaxUnit> followingSyntaxUnitsGroupExcludingCommonElements = createSyntaxUnitsGroupExcludingCommonElements(followingSyntaxUnitGroup, commonSyntaxUnitsExcludingOperations);
 
-                    List<SyntaxUnit> newSyntaxUnitsExpression = createNewSyntaxUnitsGroup(
-                            commonSyntaxUnitsExcludingOperations,
-                            i,
-                            j,
-                            listOfSyntaxUnitsGroups,
-                            currentSyntaxUnitsGroupExcludingCommonElements,
-                            followingSyntaxUnitsGroupExcludingCommonElements
-                    );
+                    if (!(commonSyntaxUnitsExcludingOperations.size() == 1 && (
+                            (commonSyntaxUnitsExcludingOperations.getFirst() instanceof Number number && number.getValue().matches("-1|-1.0")) ||
+                                    (commonSyntaxUnitsExcludingOperations.getFirst() instanceof LogicalBlock logicalBlock &&
+                                            logicalBlock.getSyntaxUnits().size() == 1 &&
+                                            logicalBlock.getSyntaxUnits().getFirst() instanceof Number numberInLogicalBlock &&
+                                            numberInLogicalBlock.getValue().matches("-1|-1.0")))
+                    )) {
+                        List<SyntaxUnit> currentSyntaxUnitsGroupExcludingCommonElements = createSyntaxUnitsGroupExcludingCommonElements(currentSyntaxUnitsGroup, commonSyntaxUnitsExcludingOperations);
+                        List<SyntaxUnit> followingSyntaxUnitsGroupExcludingCommonElements = createSyntaxUnitsGroupExcludingCommonElements(followingSyntaxUnitGroup, commonSyntaxUnitsExcludingOperations);
 
-                    if (!newSyntaxUnitsExpression.isEmpty()) {
-                        listOfSyntaxUnitsAsExpressions.add(newSyntaxUnitsExpression);
+                        List<SyntaxUnit> newSyntaxUnitsExpression = createNewSyntaxUnitsGroup(
+                                commonSyntaxUnitsExcludingOperations,
+                                i,
+                                j,
+                                listOfSyntaxUnitsGroups,
+                                currentSyntaxUnitsGroupExcludingCommonElements,
+                                followingSyntaxUnitsGroupExcludingCommonElements
+                        );
+
+                        if (!newSyntaxUnitsExpression.isEmpty()) {
+                            listOfSyntaxUnitsAsExpressions.add(newSyntaxUnitsExpression);
+
+                            if (allGeneratedSyntaxUnits.size() + listOfSyntaxUnitsAsExpressions.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
+                                return listOfSyntaxUnitsAsExpressions;
+                            }
+                        }
                     }
                 }
             }
@@ -156,7 +165,7 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
             List<List<SyntaxUnit>> listOfSyntaxUnitsGroups,
             List<SyntaxUnit> currentSyntaxUnitsGroupExcludingCommonElements,
             List<SyntaxUnit> followingSyntaxUnitsGroupExcludingCommonElements
-    ) throws Exception {
+    ) {
         List<SyntaxUnit> commonElements = new ArrayList<>();
 
         List<SyntaxUnit> syntaxUnitsAsExpression = new ArrayList<>();
@@ -260,7 +269,7 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
 
     private void process(List<SyntaxUnit> syntaxUnits, SyntaxUnitExpression syntaxUnitExpression) throws Exception {
         generatedSyntaxUnitsExpressionsByProcessingSyntaxContainersOfOriginalSyntaxUnits(syntaxUnits, syntaxUnitExpression);
-        if (allGeneratedSyntaxUnits.size() > limitNumberOfGeneratedExpressions) {
+        if (allGeneratedSyntaxUnits.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
             return;
         }
         generatedSyntaxUnitsExpressionsByProcessingInsideSyntaxContainersOfOriginalSyntaxUnits(syntaxUnits, syntaxUnitExpression);
@@ -332,16 +341,16 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
             String generatesExpressionStrRepresentation = ExpressionParser.getExpressionAsString(generatedExpression.getSyntaxUnits());
             if (!allGeneratedSyntaxUnits.contains(generatesExpressionStrRepresentation)) {
                 allGeneratedSyntaxUnits.add(generatesExpressionStrRepresentation);
-
                 System.out.print("\r" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Log [Number of generated expressions]: " + Color.DEFAULT.getAnsiValue() + allGeneratedSyntaxUnits.size());
-                if (allGeneratedSyntaxUnits.size() > limitNumberOfGeneratedExpressions) {
-                    return;
-                }
 
                 SyntaxUnitExpression currentSyntaxUnitExpression = new SyntaxUnitExpression(
                         ExpressionParser.convertExpressionToParsedSyntaxUnit(generatesExpressionStrRepresentation)
                 );
                 syntaxUnitExpression.getSyntaxUnitExpressions().add(currentSyntaxUnitExpression);
+
+                if (allGeneratedSyntaxUnits.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
+                    return;
+                }
 
                 process(generatedExpression.getSyntaxUnits(), currentSyntaxUnitExpression);
             }
