@@ -142,7 +142,7 @@ class MainTest {
 
         String test70= "f*f*5.9+f*q";
         String test71= "b*t-b*f*f*5.9+b*f*q+b*g*f*5.9-b*g*q";
-        String test72= "a/k-c/k+2/k-t";
+        String test72= "a-b*k+b*t-b*f*f*5.9+b*f*q+b*g*f*5.9-b*g*q-b*w/p+b*y*m/p-b*y/p-x*x/(d+q-w)+3*x/(d+q-w)+3*x/(d+q-w)+3*3/(d+q-w)";
 
         String test73= "a-b*k+b*t-b*f*f*5.9+b*f*q+b*g*f*5.9-b*g*q-b*w/p+b*y*m/p-b*y/p-x*x/(d+q-w)+3*x/(d+q-w)+3*x/(d+q-w)+3*3/(d+q-w)";
         String test74= "b*g*q-b*w/p+b*y*m/p-b*y/p-x*x/(d+q-w)+3*x/(d+q-w)+3*x/(d+q-w)+3*3/(d+q-w)";
@@ -154,7 +154,7 @@ class MainTest {
                 BoolArg.TRUE,
                 List.of(PropertyArg.DEFAULT, PropertyArg.ASSOCIATIVE),
                 true,
-                Long.MAX_VALUE,
+                -1L,
                 true
         );
         GlobalSettings.configure(configuration);

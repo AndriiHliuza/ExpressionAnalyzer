@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SyntaxUnitExpression {
     private SyntaxUnit syntaxUnit;
-    private List<SyntaxUnitExpression> syntaxUnitExpressions = new ArrayList<>();
+    private final List<SyntaxUnitExpression> syntaxUnitExpressions = new ArrayList<>();
     private final StringBuilder spaceBuilder = new StringBuilder();
     private final StringBuilder fileSpaceBuilder = new StringBuilder();
 
@@ -26,20 +26,16 @@ public class SyntaxUnitExpression {
         this.syntaxUnit = syntaxUnit;
     }
 
-    public synchronized List<SyntaxUnitExpression> getSyntaxUnitExpressions() {
+    public List<SyntaxUnitExpression> getSyntaxUnitExpressions() {
         return syntaxUnitExpressions;
     }
 
-    public void setSyntaxUnitExpressions(List<SyntaxUnitExpression> syntaxUnitExpressions) {
-        this.syntaxUnitExpressions = syntaxUnitExpressions;
-    }
-
-    public void printTreeOfDependentSyntaxUnitExpressions() throws Exception {
+    public void printTreeOfDependentSyntaxUnitExpressions() {
         spaceBuilder.append(" ".repeat(5));
         printTreeOfDependentSyntaxUnitExpressions(syntaxUnitExpressions, "");
     }
 
-    private void printTreeOfDependentSyntaxUnitExpressions(List<SyntaxUnitExpression> syntaxUnitExpressions, String levelPrefix) throws Exception {
+    private void printTreeOfDependentSyntaxUnitExpressions(List<SyntaxUnitExpression> syntaxUnitExpressions, String levelPrefix) {
         for (int i = 0; i < syntaxUnitExpressions.size(); i++) {
             SyntaxUnitExpression syntaxUnitExpression = syntaxUnitExpressions.get(i);
             System.out.println(spaceBuilder + levelPrefix + (i + 1) + ") " + ExpressionParser.getExpressionAsString(syntaxUnitExpression.syntaxUnit.getSyntaxUnits()) + "\n");

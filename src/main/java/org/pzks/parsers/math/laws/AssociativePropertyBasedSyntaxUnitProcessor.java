@@ -15,8 +15,8 @@ import java.util.*;
 
 public class AssociativePropertyBasedSyntaxUnitProcessor {
     private List<SyntaxUnit> syntaxUnits;
-    private SyntaxUnitExpression syntaxUnitExpression;
-    private Set<String> allGeneratedSyntaxUnits = new HashSet<>();
+    private final SyntaxUnitExpression syntaxUnitExpression;
+    private final Set<String> allGeneratedExpressions = new HashSet<>();
 
     public AssociativePropertyBasedSyntaxUnitProcessor(SyntaxUnit syntaxUnit) throws Exception {
         this.syntaxUnits = syntaxUnit.getSyntaxUnits();
@@ -111,7 +111,7 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
                         if (!newSyntaxUnitsExpression.isEmpty()) {
                             listOfSyntaxUnitsAsExpressions.add(newSyntaxUnitsExpression);
 
-                            if (allGeneratedSyntaxUnits.size() + listOfSyntaxUnitsAsExpressions.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
+                            if (allGeneratedExpressions.size() + listOfSyntaxUnitsAsExpressions.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
                                 return listOfSyntaxUnitsAsExpressions;
                             }
                         }
@@ -269,7 +269,7 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
 
     private void process(List<SyntaxUnit> syntaxUnits, SyntaxUnitExpression syntaxUnitExpression) throws Exception {
         generatedSyntaxUnitsExpressionsByProcessingSyntaxContainersOfOriginalSyntaxUnits(syntaxUnits, syntaxUnitExpression);
-        if (allGeneratedSyntaxUnits.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
+        if (allGeneratedExpressions.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
             return;
         }
         generatedSyntaxUnitsExpressionsByProcessingInsideSyntaxContainersOfOriginalSyntaxUnits(syntaxUnits, syntaxUnitExpression);
@@ -339,16 +339,16 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
     private void saveGeneratedSyntaxUnitsExpression(List<SyntaxUnit> generatedExpressions, SyntaxUnitExpression syntaxUnitExpression) throws Exception {
         for (SyntaxUnit generatedExpression : generatedExpressions) {
             String generatesExpressionStrRepresentation = ExpressionParser.getExpressionAsString(generatedExpression.getSyntaxUnits());
-            if (!allGeneratedSyntaxUnits.contains(generatesExpressionStrRepresentation)) {
-                allGeneratedSyntaxUnits.add(generatesExpressionStrRepresentation);
-                System.out.print("\r" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Log [Number of generated expressions]: " + Color.DEFAULT.getAnsiValue() + allGeneratedSyntaxUnits.size());
+            boolean wasNewExpressionSaved = allGeneratedExpressions.add(generatesExpressionStrRepresentation);
+            if (wasNewExpressionSaved) {
+                System.out.print("\r" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Log [Number of generated expressions]: " + Color.DEFAULT.getAnsiValue() + allGeneratedExpressions.size());
 
                 SyntaxUnitExpression currentSyntaxUnitExpression = new SyntaxUnitExpression(
                         ExpressionParser.convertExpressionToParsedSyntaxUnit(generatesExpressionStrRepresentation)
                 );
                 syntaxUnitExpression.getSyntaxUnitExpressions().add(currentSyntaxUnitExpression);
 
-                if (allGeneratedSyntaxUnits.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
+                if (allGeneratedExpressions.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
                     return;
                 }
 
@@ -363,6 +363,6 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
     }
 
     public int getNumberOfGeneratedExpressions() {
-        return allGeneratedSyntaxUnits.size();
+        return allGeneratedExpressions.size();
     }
 }
