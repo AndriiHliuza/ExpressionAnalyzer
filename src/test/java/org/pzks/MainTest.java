@@ -146,20 +146,22 @@ class MainTest {
 
         String test73= "a-b*k+b*t-b*f*f*5.9+b*f*q+b*g*f*5.9-b*g*q-b*w/p+b*y*m/p-b*y/p-x*x/(d+q-w)+3*x/(d+q-w)+3*x/(d+q-w)+3*3/(d+q-w)";
         String test74= "b*g*q-b*w/p+b*y*m/p-b*y/p-x*x/(d+q-w)+3*x/(d+q-w)+3*x/(d+q-w)+3*3/(d+q-w)";
+        String test75= "a + b*c + d + e*f*g + h*i + j*(k + L + m*(n-p*q+r) - s*t)";
+        String test76= "a-b*c+k";
         long startTime = System.nanoTime();
 
         Configuration configuration = new Configuration(
                 false,
                 true,
                 BoolArg.TRUE,
-                List.of(PropertyArg.DEFAULT, PropertyArg.ASSOCIATIVE),
+                List.of(PropertyArg.DEFAULT, PropertyArg.COMMUTATIVE),
                 true,
                 -1L,
                 true
         );
         GlobalSettings.configure(configuration);
 
-        ExpressionParser.parse(test72);
+        ExpressionParser.parse(test76);
         long endTime = System.nanoTime();
 
         Statistics.displayTime(startTime, endTime);
