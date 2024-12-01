@@ -73,6 +73,10 @@ public class ProgramArgsProcessor {
         return programKeys.contains(ProgramKey.PARALLEL_CALCULATION_TREE.getValue());
     }
 
+    public boolean shouldBuildBinaryParallelCalculationTree() {
+        return programKeys.contains(ProgramKey.BiNARY_PARALLEL_CALCULATION_TREE.getValue());
+    }
+
     public List<PropertyArg> getPropertyArgs() {
         String propertyKeyValuesPattern = ProgramKey.PROPERTY.getProgramKeyArgs().stream()
                 .filter(PropertyArg.class::isInstance)

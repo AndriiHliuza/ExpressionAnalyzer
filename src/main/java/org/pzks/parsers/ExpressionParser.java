@@ -5,13 +5,15 @@ import org.pzks.parsers.math.laws.AssociativePropertyBasedSyntaxUnitProcessor;
 import org.pzks.parsers.math.laws.CommutativePropertyBasedSyntaxUnitProcessor;
 import org.pzks.parsers.math.laws.units.SyntaxUnitExpression;
 import org.pzks.parsers.optimizers.ExpressionOptimizer;
-import org.pzks.parsers.parallelization.ParallelExpressionTreeBuilder;
+import org.pzks.parsers.parallelization.NaryParallelExpressionTreeBuilder;
+import org.pzks.parsers.parallelization.BinaryParallelExpressionTreeBuilder;
 import org.pzks.units.*;
 import org.pzks.utils.*;
 import org.pzks.utils.args.processor.BoolArg;
 import org.pzks.utils.args.processor.PropertyArg;
-import org.pzks.utils.trees.TreeNode;
+import org.pzks.utils.trees.BinaryTreeNode;
 import org.pzks.parsers.simplifiers.ExpressionSimplifier;
+import org.pzks.utils.trees.NaryTreeNode;
 import org.pzks.utils.trees.TreeSerializer;
 
 import java.io.File;
@@ -228,40 +230,55 @@ public class ExpressionParser {
     }
 
     private static void buildParallelCalculationTree(SyntaxUnit syntaxUnit, String fileName) throws Exception {
-        ParallelExpressionTreeBuilder treeBuilder = new ParallelExpressionTreeBuilder(syntaxUnit);
-        List<String> warnings = treeBuilder.getWarnings();
-        if (warnings.isEmpty()) {
-            TreeNode rootNode = treeBuilder.getRootNode();
+        if (GlobalSettings.CONFIGURATION.shouldBuildBinaryParallelCalculationTree()) {
+            BinaryParallelExpressionTreeBuilder treeBuilder = new BinaryParallelExpressionTreeBuilder(syntaxUnit);
+            List<String> warnings = treeBuilder.getWarnings();
+            if (warnings.isEmpty()) {
+                BinaryTreeNode rootNode = treeBuilder.getRootNode();
+
+                HeadlinePrinter.print("Tree building info", Color.GREEN);
+                boolean isSuccessfullySaved = TreeSerializer.safeBinaryTreeToCurrentDirectory(rootNode, fileName);
+                displayTreeBuildingStatus(fileName, isSuccessfullySaved);
+            } else {
+                if (GlobalSettings.CONFIGURATION.shouldShowWarnings()) {
+                    HeadlinePrinter.print("Tree building info", Color.GREEN);
+                    System.out.println(Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "The provided expression is not supported for building the parallel tree!");
+                    int maxWarningLength = warnings.stream()
+                            .mapToInt(String::length)
+                            .max()
+                            .orElse(20);
+                    maxWarningLength = Math.max(maxWarningLength, 29);
+
+                    System.out.println("-".repeat(10) + Color.YELLOW.getAnsiValue() + "Warning details" + Color.DEFAULT.getAnsiValue() + "-".repeat(maxWarningLength + 6 - 25));
+                    for (String warning : warnings) {
+                        int warningLength = warning.length();
+                        int numberOfSpacesToAddTOTheOutput = maxWarningLength - warningLength;
+                        System.out.println("| - " + warning + " ".repeat(numberOfSpacesToAddTOTheOutput) + " |");
+                    }
+                    System.out.println("-".repeat(maxWarningLength + 6));
+                }
+            }
+        } else {
+            NaryParallelExpressionTreeBuilder naryParallelExpressionTreeBuilder = new NaryParallelExpressionTreeBuilder(syntaxUnit);
+            NaryTreeNode rootNode = naryParallelExpressionTreeBuilder.getRootNode();
 
             HeadlinePrinter.print("Tree building info", Color.GREEN);
-            boolean isSuccessfullySaved = TreeSerializer.safeToCurrentDirectory(rootNode, fileName);
-            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Tree was successfully build.");
-
-            File currentDirectory = new File(".");
-            String savedFileLocation = currentDirectory.getAbsolutePath().substring(0, currentDirectory.getAbsolutePath().length() - 1) + fileName;
-
-            String messageUponSaving = isSuccessfullySaved ? "Tree was saved to '" + savedFileLocation + "'" : "Oops, something went wrong. File wasn't saved.";
-            System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + messageUponSaving);
-        } else {
-            if (GlobalSettings.CONFIGURATION.shouldShowWarnings()) {
-                HeadlinePrinter.print("Tree building info", Color.GREEN);
-                System.out.println("\n" + Color.YELLOW.getAnsiValue() + "Warning: " + Color.DEFAULT.getAnsiValue() + "The provided expression is not supported for building the parallel tree!");
-                int maxWarningLength = warnings.stream()
-                        .mapToInt(String::length)
-                        .max()
-                        .orElse(20);
-                maxWarningLength = Math.max(maxWarningLength, 29);
-
-                System.out.println("-".repeat(10) + Color.YELLOW.getAnsiValue() + "Warning details" + Color.DEFAULT.getAnsiValue() + "-".repeat(maxWarningLength + 6 - 25));
-                for (String warning : warnings) {
-                    int warningLength = warning.length();
-                    int numberOfSpacesToAddTOTheOutput = maxWarningLength - warningLength;
-                    System.out.println("| - " + warning + " ".repeat(numberOfSpacesToAddTOTheOutput) + " |");
-                }
-                System.out.println("-".repeat(maxWarningLength + 6));
+            boolean isSuccessfullySaved = TreeSerializer.safeNaryTreeToCurrentDirectory(rootNode, fileName);
+            if (!SyntaxUnitsValidationUtil.isFunctionsAbsent(syntaxUnit.getSyntaxUnits())) {
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Functions detected when building parallel calculation tree.");
             }
+            displayTreeBuildingStatus(fileName, isSuccessfullySaved);
         }
+    }
 
+    private static void displayTreeBuildingStatus(String fileName, boolean isSuccessfullySaved) {
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Tree was successfully build.");
+
+        File currentDirectory = new File(".");
+        String savedFileLocation = currentDirectory.getAbsolutePath().substring(0, currentDirectory.getAbsolutePath().length() - 1) + fileName;
+
+        String messageUponSaving = isSuccessfullySaved ? "Tree was saved to '" + savedFileLocation + "'" : "Oops, something went wrong. File wasn't saved.";
+        System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + messageUponSaving);
     }
 
     private static void propertyProcessing(

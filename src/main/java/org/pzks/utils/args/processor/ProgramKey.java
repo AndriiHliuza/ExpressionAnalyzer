@@ -21,6 +21,12 @@ public enum ProgramKey {
     )
     ),
     PARALLEL_CALCULATION_TREE("--tree", "Build parallel calculation tree of the expression."),
+    BiNARY_PARALLEL_CALCULATION_TREE("--binary-tree", """
+            Build parallel calculation tree of the expression as binary tree.
+            Note:
+            - Can be used only in combination with --tree
+            - This will make impossible creation of trees out of expressions that contains functions.
+            """),
     PROPERTY("--property", List.of(PropertyArg.values()), """
             Set property to use.
             Available properties: %s.

@@ -17,14 +17,12 @@ public class BasicExpressionSimplifier {
     }
 
     public BasicExpressionSimplifier simplifyOnes() {
-        expression = expression.replaceAll("\\*(1|\\+1|1\\.1|\\+1\\.1)", "");         // *1
-        expression = expression.replaceAll("/(1|\\+1|1\\.1|\\+1\\.1)", "");           // /1
+        expression = expression.replaceAll("\\*(1\\.0+|\\+1\\.0+|1|\\+1)(\\s*)(?=([+\\-*/]|$))", "");         // *1
+        expression = expression.replaceAll("/(1\\.0+|\\+1\\.0+|1|\\+1)(\\s*)(?=([+\\-*/]|$))", "");           // /1
 
-        expression = expression.replaceAll("(?<=[+\\-*])(1|\\+1|1\\.1|\\+1\\.1)\\*", "");   // 1*
-        expression = expression.replaceAll("^(1|\\+1|1\\.1|\\+1\\.1)\\*", "");
+        expression = expression.replaceAll("(?<=([+\\-*]|^))(\\s*)(1\\.0+|\\+1\\.0+|1|\\+1)(\\s*)\\*", "");   // 1*
 
-        expression = expression.replaceAll("(?<=[+\\-*])(-1|-1\\.1)\\*", "-");   // 1*
-        expression = expression.replaceAll("^(-1|-1\\.1)\\*", "-");
+        expression = expression.replaceAll("(?<=([+\\-*]|^))(\\s*)(-1\\.0+|-1)(\\s*)\\*", "-");
         return this;
     }
 

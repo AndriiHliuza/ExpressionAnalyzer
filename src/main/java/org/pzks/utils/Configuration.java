@@ -14,6 +14,7 @@ public class Configuration {
     private final BoolArg optimizationArg;
     private final List<PropertyArg> propertyArgs;
     private final boolean buildParallelCalculationTree;
+    private final boolean buildBinaryParallelCalculationTree;
     private final long numberOfGeneratedExpressionsLimit;
     private final boolean showWarnings;
 
@@ -23,6 +24,7 @@ public class Configuration {
         optimizationArg = BoolArg.TRUE;
         propertyArgs = new ArrayList<>();
         buildParallelCalculationTree = false;
+        buildBinaryParallelCalculationTree = false;
         numberOfGeneratedExpressionsLimit = -1L;
         showWarnings = true;
     }
@@ -33,6 +35,7 @@ public class Configuration {
         optimizationArg = programArgsProcessor.getOptimizationArg();
         propertyArgs = programArgsProcessor.getPropertyArgs();
         buildParallelCalculationTree = programArgsProcessor.shouldBuildParallelCalculationTree();
+        buildBinaryParallelCalculationTree = programArgsProcessor.shouldBuildBinaryParallelCalculationTree();
         if (programArgsProcessor.shouldRemoveLimitOfGeneratedExpressionsBasedOnProperty()) {
             numberOfGeneratedExpressionsLimit = Long.MAX_VALUE;
             GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT = Long.MAX_VALUE;
@@ -51,6 +54,7 @@ public class Configuration {
             BoolArg optimizationArg,
             List<PropertyArg> propertyArgs,
             boolean buildParallelCalculationTree,
+            boolean buildBinaryParallelCalculationTree,
             long numberOfGeneratedExceptionsLimit,
             boolean showWarnings
     ) {
@@ -59,6 +63,7 @@ public class Configuration {
         this.optimizationArg = optimizationArg;
         this.propertyArgs = propertyArgs;
         this.buildParallelCalculationTree = buildParallelCalculationTree;
+        this.buildBinaryParallelCalculationTree = buildBinaryParallelCalculationTree;
         this.numberOfGeneratedExpressionsLimit = numberOfGeneratedExceptionsLimit;
         if (numberOfGeneratedExpressionsLimit != -1L && GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT != numberOfGeneratedExceptionsLimit) {
             GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT = numberOfGeneratedExceptionsLimit;
@@ -84,6 +89,10 @@ public class Configuration {
 
     public boolean shouldBuildParallelCalculationTree() {
         return buildParallelCalculationTree;
+    }
+
+    public boolean shouldBuildBinaryParallelCalculationTree() {
+        return buildBinaryParallelCalculationTree;
     }
 
     public long getNumberOfGeneratedExpressionsLimit() {

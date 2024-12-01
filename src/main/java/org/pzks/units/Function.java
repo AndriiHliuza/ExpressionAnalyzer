@@ -97,6 +97,14 @@ public class Function extends SyntaxContainer {
         setValue(value);
     }
 
+    public String getSimplifiedFunctionSignature() {
+        String params = "()";
+        if (!getSyntaxUnits().isEmpty()) {
+            params = "(...)";
+        }
+        return getDetails().get("name") + params;
+    }
+
     @Override
     public String toString() {
         return "Function{" +

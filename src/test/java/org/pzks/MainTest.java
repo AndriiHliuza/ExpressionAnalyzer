@@ -8,6 +8,7 @@ import org.pzks.utils.Statistics;
 import org.pzks.utils.args.processor.BoolArg;
 import org.pzks.utils.args.processor.PropertyArg;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -148,23 +149,43 @@ class MainTest {
         String test74= "b*g*q-b*w/p+b*y*m/p-b*y/p-x*x/(d+q-w)+3*x/(d+q-w)+3*x/(d+q-w)+3*3/(d+q-w)";
         String test75= "a + b*c + d + e*f*g + h*i + j*(k + L + m*(n-p*q+r) - s*t)";
         String test76= "a-b*c+k";
+        String test77= "(90+3) - 4*5 - 6*17/2 + 3*9*10 - 0.5*(11*12+13*14/7)";
+        String test78= "a*b*c/d + e*f*g/h + t*(a-q) - 5.0*i - 4*j + k + L + m*n*k*(p-1) + sin(pi*R)*log(q)/sin(3*pi/4 + x*pi/2)";
+        String test79= "a-b*(k-t+(f-g)*(f*5.9-q)+(w-y*(m-1))/p)-(x-3)*(x+3)/(d+q-w)";
+        String test80= "cossfdadfaaf(a+b, c+d, f+g)";
         long startTime = System.nanoTime();
 
         Configuration configuration = new Configuration(
                 false,
                 true,
                 BoolArg.TRUE,
-                List.of(PropertyArg.DEFAULT, PropertyArg.COMMUTATIVE),
+                List.of(),
                 true,
+                false,
                 -1L,
                 true
         );
         GlobalSettings.configure(configuration);
 
-        ExpressionParser.parse(test76);
+        ExpressionParser.parse(test78);
         long endTime = System.nanoTime();
 
         Statistics.displayTime(startTime, endTime);
+
+//        JFrame frame = new JFrame("JTable Example");
+//        String[] columns = {"ID", "Name", "Age"};
+//        Object[][] data = {
+//                {1, "Alice", 25},
+//                {2, "Bob", 30},
+//                {3, "Charlie", 35}
+//        };
+//        JTable table = new JTable(data, columns);
+//
+//        JScrollPane scrollPane = new JScrollPane(table);
+//        frame.add(scrollPane);
+//        frame.setSize(400, 200);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame.setVisible(true);
 
 //        for (int i = 0; i <= 100; i += 10) {
 //            // Print percentage with \r to overwrite the line
