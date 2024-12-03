@@ -1,12 +1,12 @@
 package org.pzks.parsers;
 
 import org.pzks.fixers.ExpressionFixer;
+import org.pzks.parsers.dataflow.DataflowSystem;
+import org.pzks.parsers.parallelization.ParallelExpressionTreeFactory;
 import org.pzks.parsers.math.laws.AssociativePropertyBasedSyntaxUnitProcessor;
 import org.pzks.parsers.math.laws.CommutativePropertyBasedSyntaxUnitProcessor;
 import org.pzks.parsers.math.laws.units.SyntaxUnitExpression;
 import org.pzks.parsers.optimizers.ExpressionOptimizer;
-import org.pzks.parsers.parallelization.NaryParallelExpressionTreeBuilder;
-import org.pzks.parsers.parallelization.BinaryParallelExpressionTreeBuilder;
 import org.pzks.units.*;
 import org.pzks.utils.*;
 import org.pzks.utils.args.processor.BoolArg;
@@ -230,15 +230,22 @@ public class ExpressionParser {
     }
 
     private static void buildParallelCalculationTree(SyntaxUnit syntaxUnit, String fileName) throws Exception {
+        ParallelExpressionTreeFactory parallelExpressionTreeFactory = new ParallelExpressionTreeFactory(syntaxUnit);
+        List<String> warnings = parallelExpressionTreeFactory.getWarnings();
         if (GlobalSettings.CONFIGURATION.shouldBuildBinaryParallelCalculationTree()) {
-            BinaryParallelExpressionTreeBuilder treeBuilder = new BinaryParallelExpressionTreeBuilder(syntaxUnit);
-            List<String> warnings = treeBuilder.getWarnings();
             if (warnings.isEmpty()) {
-                BinaryTreeNode rootNode = treeBuilder.getRootNode();
+                BinaryTreeNode binaryTreeRootNode = parallelExpressionTreeFactory.getBinaryTreeRootNode();
+                NaryTreeNode operationsTreeRootNode = parallelExpressionTreeFactory.getOperationsTreeRootNode();
+
+                DataflowSystem dataflowSystem = new DataflowSystem(operationsTreeRootNode);
+                operationsTreeRootNode = dataflowSystem.getNaryTreeNode();
 
                 HeadlinePrinter.print("Tree building info", Color.GREEN);
-                boolean isSuccessfullySaved = TreeSerializer.safeBinaryTreeToCurrentDirectory(rootNode, fileName);
+                boolean isSuccessfullySaved = TreeSerializer.safeBinaryTreeToCurrentDirectory(binaryTreeRootNode, fileName);
+                boolean isOperationTreeSuccessfullySaved = TreeSerializer.safeNaryTreeToCurrentDirectory(operationsTreeRootNode, "operation-" + fileName);
                 displayTreeBuildingStatus(fileName, isSuccessfullySaved);
+                System.out.println();
+                displayTreeBuildingStatus("operation-" + fileName, isOperationTreeSuccessfullySaved);
             } else {
                 if (GlobalSettings.CONFIGURATION.shouldShowWarnings()) {
                     HeadlinePrinter.print("Tree building info", Color.GREEN);
@@ -259,15 +266,21 @@ public class ExpressionParser {
                 }
             }
         } else {
-            NaryParallelExpressionTreeBuilder naryParallelExpressionTreeBuilder = new NaryParallelExpressionTreeBuilder(syntaxUnit);
-            NaryTreeNode rootNode = naryParallelExpressionTreeBuilder.getRootNode();
+            NaryTreeNode naryTreeRootNode = parallelExpressionTreeFactory.getNaryTreeRootNode();
+            NaryTreeNode operationsTreeRootNode = parallelExpressionTreeFactory.getOperationsTreeRootNode();
+
+            DataflowSystem dataflowSystem = new DataflowSystem(operationsTreeRootNode);
+            operationsTreeRootNode = dataflowSystem.getNaryTreeNode();
 
             HeadlinePrinter.print("Tree building info", Color.GREEN);
-            boolean isSuccessfullySaved = TreeSerializer.safeNaryTreeToCurrentDirectory(rootNode, fileName);
+            boolean isSuccessfullySaved = TreeSerializer.safeNaryTreeToCurrentDirectory(naryTreeRootNode, fileName);
+            boolean isOperationTreeSuccessfullySaved = TreeSerializer.safeNaryTreeToCurrentDirectory(operationsTreeRootNode, "operation-" + fileName);
             if (!SyntaxUnitsValidationUtil.isFunctionsAbsent(syntaxUnit.getSyntaxUnits())) {
-                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Functions detected when building parallel calculation tree.");
+                System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "Log: " + Color.DEFAULT.getAnsiValue() + "Functions detected when building parallel calculation tree.\n");
             }
             displayTreeBuildingStatus(fileName, isSuccessfullySaved);
+            System.out.println();
+            displayTreeBuildingStatus("operation-" + fileName, isOperationTreeSuccessfullySaved);
         }
     }
 

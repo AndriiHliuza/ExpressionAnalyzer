@@ -31,14 +31,10 @@ public class NaryParallelExpressionTreeBuilder {
             if (syntaxUnit.getSyntaxUnits().getFirst() instanceof Function function) {
                 List<SyntaxUnit> functionParams = function.getSyntaxUnits();
                 naryTreeNode.setValue(function.getSimplifiedFunctionSignature());
-                for (int i = 0; i < functionParams.size(); i++) {
-                    SyntaxUnit param = functionParams.get(i);
+                for (SyntaxUnit param : functionParams) {
                     BinaryParallelExpressionTreeBuilder functionParamTreeBuilder = new BinaryParallelExpressionTreeBuilder(param);
                     BinaryTreeNode functionParamBinaryTreeRootNode = functionParamTreeBuilder.getRootNode();
-                    NaryTreeNode functionParamNaryTreeNode = new NaryTreeNode();
-                    functionParamNaryTreeNode.setValue("param-" + (i + 1));
-                    functionParamNaryTreeNode.getChildren().add(convertBinaryTreeToNaryTree(functionParamBinaryTreeRootNode));
-                    naryTreeNode.getChildren().add(functionParamNaryTreeNode);
+                    naryTreeNode.getChildren().add(convertBinaryTreeToNaryTree(functionParamBinaryTreeRootNode));
                 }
             } else {
                 naryTreeNode.setValue(value);

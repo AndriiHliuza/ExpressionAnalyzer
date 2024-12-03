@@ -72,4 +72,21 @@ public class NaryTreeNode extends TreeNode {
         }
         return clone;
     }
+
+    public int getMaxHeight() {
+        return getMaxHeight(this);
+    }
+
+    private int getMaxHeight(NaryTreeNode naryTreeNode) {
+        if (naryTreeNode.children.isEmpty()) {
+            return 0;
+        }
+
+        int maxChildHeight = 0;
+        for (NaryTreeNode child : naryTreeNode.children) {
+            maxChildHeight = Math.max(maxChildHeight, getMaxHeight(child));
+        }
+
+        return 1 + maxChildHeight;
+    }
 }

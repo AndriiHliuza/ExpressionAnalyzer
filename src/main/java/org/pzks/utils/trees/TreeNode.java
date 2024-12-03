@@ -2,6 +2,7 @@ package org.pzks.utils.trees;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.pzks.utils.DynamicObject;
 
 import java.util.Objects;
@@ -10,8 +11,12 @@ import java.util.Objects;
 public abstract class TreeNode implements DynamicObject, Cloneable {
     private String value; // operation for level 2 and up | any other
 
-    @JsonIgnore
     private int level;
+
+    @JsonIgnore
+    private TreeNode parent;
+
+    private int number;
 
     public TreeNode() {
     }
@@ -33,12 +38,34 @@ public abstract class TreeNode implements DynamicObject, Cloneable {
         this.value = value;
     }
 
+    @JsonIgnore
     public int getLevel() {
         return level;
     }
 
     public void setLevel(int level) {
         this.level = level;
+    }
+
+    @JsonProperty("level")
+    public Integer getLevelForJson() {
+        return value != null ? level : null;
+    }
+
+    public TreeNode getParent() {
+        return parent;
+    }
+
+    public void setParent(TreeNode parent) {
+        this.parent = parent;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
     }
 
     @Override
@@ -59,6 +86,7 @@ public abstract class TreeNode implements DynamicObject, Cloneable {
         return "TreeNode{" +
                 "value='" + value + '\'' +
                 ", level=" + level +
+                ", number=" + number +
                 '}';
     }
 

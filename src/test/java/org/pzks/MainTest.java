@@ -153,6 +153,7 @@ class MainTest {
         String test78= "a*b*c/d + e*f*g/h + t*(a-q) - 5.0*i - 4*j + k + L + m*n*k*(p-1) + sin(pi*R)*log(q)/sin(3*pi/4 + x*pi/2)";
         String test79= "a-b*(k-t+(f-g)*(f*5.9-q)+(w-y*(m-1))/p)-(x-3)*(x+3)/(d+q-w)";
         String test80= "cossfdadfaaf(a+b, c+d, f+g)";
+        String test81= "a+b+c*d-cos(a, b + c)";
         long startTime = System.nanoTime();
 
         Configuration configuration = new Configuration(
