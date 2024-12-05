@@ -123,7 +123,7 @@ public class ProgramArgsProcessor {
     }
 
     public boolean shouldShowOnlyDataflowSystemStatistics() {
-        return programKeys.contains(ProgramKey.DATAFLOW.getValue());
+        return programKeys.contains(ProgramKey.DATAFLOW_STATISTICS.getValue());
     }
 
     public String getExpression() {
