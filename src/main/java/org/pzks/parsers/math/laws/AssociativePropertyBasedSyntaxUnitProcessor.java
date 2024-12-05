@@ -1,6 +1,6 @@
 package org.pzks.parsers.math.laws;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.converters.ExpressionConverter;
 import org.pzks.parsers.math.laws.units.SyntaxUnitExpression;
 import org.pzks.parsers.optimizers.AdditionAndSubtractionOperationsParallelizationOptimizer;
 import org.pzks.parsers.optimizers.ExpressionOptimizer;
@@ -9,7 +9,7 @@ import org.pzks.parsers.simplifiers.ExpressionSimplifier;
 import org.pzks.units.*;
 import org.pzks.units.Number;
 import org.pzks.utils.Color;
-import org.pzks.utils.GlobalSettings;
+import org.pzks.settings.GlobalSettings;
 
 import java.util.*;
 
@@ -111,7 +111,7 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
                         if (!newSyntaxUnitsExpression.isEmpty()) {
                             listOfSyntaxUnitsAsExpressions.add(newSyntaxUnitsExpression);
 
-                            if (allGeneratedExpressions.size() + listOfSyntaxUnitsAsExpressions.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
+                            if (allGeneratedExpressions.size() + listOfSyntaxUnitsAsExpressions.size() > GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT) {
                                 return listOfSyntaxUnitsAsExpressions;
                             }
                         }
@@ -255,12 +255,12 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
 
         List<SyntaxUnit> generatedExpressions = new ArrayList<>();
         for (List<SyntaxUnit> syntaxUnitsAsExpression : listOfSyntaxUnitsAsExpressions) {
-            SyntaxUnit generatedExpression = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnitsAsExpression));
+            SyntaxUnit generatedExpression = ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnitsAsExpression));
             ExpressionSimplifier expressionSimplifier = new ExpressionSimplifier(generatedExpression);
             generatedExpression = expressionSimplifier.getSimplifiedSyntaxUnit();
             ExpressionOptimizer expressionOptimizer = new ExpressionOptimizer(generatedExpression);
             generatedExpression = expressionOptimizer.getOptimizedSyntaxUnit();
-            generatedExpression = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(generatedExpression.getSyntaxUnits()));
+            generatedExpression = ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(generatedExpression.getSyntaxUnits()));
 
             generatedExpressions.add(generatedExpression);
         }
@@ -269,7 +269,7 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
 
     private void process(List<SyntaxUnit> syntaxUnits, SyntaxUnitExpression syntaxUnitExpression) throws Exception {
         generatedSyntaxUnitsExpressionsByProcessingSyntaxContainersOfOriginalSyntaxUnits(syntaxUnits, syntaxUnitExpression);
-        if (allGeneratedExpressions.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
+        if (allGeneratedExpressions.size() > GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT) {
             return;
         }
         generatedSyntaxUnitsExpressionsByProcessingInsideSyntaxContainersOfOriginalSyntaxUnits(syntaxUnits, syntaxUnitExpression);
@@ -277,8 +277,8 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
 
     private void generatedSyntaxUnitsExpressionsByProcessingSyntaxContainersOfOriginalSyntaxUnits(List<SyntaxUnit> syntaxUnits, SyntaxUnitExpression syntaxUnitExpression) throws Exception {
         List<SyntaxUnit> generatedExpressions = generateExpressionsAccordingToAssociativeProperty(
-                ExpressionParser.convertExpressionToParsedSyntaxUnit(
-                        ExpressionParser.getExpressionAsString(syntaxUnits)
+                ExpressionConverter.convertExpressionToParsedSyntaxUnit(
+                        ExpressionConverter.getExpressionAsString(syntaxUnits)
                 ).getSyntaxUnits()
         );
 
@@ -286,8 +286,8 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
     }
 
     private void generatedSyntaxUnitsExpressionsByProcessingInsideSyntaxContainersOfOriginalSyntaxUnits(List<SyntaxUnit> syntaxUnits, SyntaxUnitExpression syntaxUnitExpression) throws Exception {
-        syntaxUnits = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits)).getSyntaxUnits();
-        SyntaxUnit providedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
+        syntaxUnits = ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnits)).getSyntaxUnits();
+        SyntaxUnit providedSyntaxUnit = ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnits));
         ExpressionSimplifier expressionSimplifier = new ExpressionSimplifier(providedSyntaxUnit);
         providedSyntaxUnit = expressionSimplifier.getSimplifiedSyntaxUnit();
         ExpressionOptimizer expressionOptimizer = new ExpressionOptimizer(providedSyntaxUnit);
@@ -301,30 +301,30 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
             if (currentSyntaxUnit instanceof SyntaxContainer) {
                 if (currentSyntaxUnit instanceof LogicalBlock) {
                     List<SyntaxUnit> generatedExpressionsFromSyntaxContainer = generateExpressionsAccordingToAssociativeProperty(
-                            ExpressionParser.convertExpressionToParsedSyntaxUnit(
-                                    ExpressionParser.getExpressionAsString(currentSyntaxUnit.getSyntaxUnits())
+                            ExpressionConverter.convertExpressionToParsedSyntaxUnit(
+                                    ExpressionConverter.getExpressionAsString(currentSyntaxUnit.getSyntaxUnits())
                             ).getSyntaxUnits()
                     );
 
                     if (!generatedExpressionsFromSyntaxContainer.isEmpty()) {
                         for (SyntaxUnit generatedExpression : generatedExpressionsFromSyntaxContainer) {
                             currentSyntaxUnit.setSyntaxUnits(generatedExpression.getSyntaxUnits());
-                            generatedExpressions.add(ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits)));
+                            generatedExpressions.add(ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnits)));
                         }
                     }
                 } else if (currentSyntaxUnit instanceof Function) {
                     for (SyntaxUnit functionParam : currentSyntaxUnit.getSyntaxUnits()) {
                         if (functionParam instanceof FunctionParam) {
                             List<SyntaxUnit> generatedExpressionsFromSyntaxContainer = generateExpressionsAccordingToAssociativeProperty(
-                                    ExpressionParser.convertExpressionToParsedSyntaxUnit(
-                                            ExpressionParser.getExpressionAsString(functionParam.getSyntaxUnits())
+                                    ExpressionConverter.convertExpressionToParsedSyntaxUnit(
+                                            ExpressionConverter.getExpressionAsString(functionParam.getSyntaxUnits())
                                     ).getSyntaxUnits()
                             );
 
                             if (!generatedExpressionsFromSyntaxContainer.isEmpty()) {
                                 for (SyntaxUnit generatedExpression : generatedExpressionsFromSyntaxContainer) {
                                     functionParam.setSyntaxUnits(generatedExpression.getSyntaxUnits());
-                                    generatedExpressions.add(ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits)));
+                                    generatedExpressions.add(ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnits)));
                                 }
                             }
                         }
@@ -338,17 +338,17 @@ public class AssociativePropertyBasedSyntaxUnitProcessor {
 
     private void saveGeneratedSyntaxUnitsExpression(List<SyntaxUnit> generatedExpressions, SyntaxUnitExpression syntaxUnitExpression) throws Exception {
         for (SyntaxUnit generatedExpression : generatedExpressions) {
-            String generatesExpressionStrRepresentation = ExpressionParser.getExpressionAsString(generatedExpression.getSyntaxUnits());
+            String generatesExpressionStrRepresentation = ExpressionConverter.getExpressionAsString(generatedExpression.getSyntaxUnits());
             boolean wasNewExpressionSaved = allGeneratedExpressions.add(generatesExpressionStrRepresentation);
             if (wasNewExpressionSaved) {
                 System.out.print("\r" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Log [Number of generated expressions]: " + Color.DEFAULT.getAnsiValue() + allGeneratedExpressions.size());
 
                 SyntaxUnitExpression currentSyntaxUnitExpression = new SyntaxUnitExpression(
-                        ExpressionParser.convertExpressionToParsedSyntaxUnit(generatesExpressionStrRepresentation)
+                        ExpressionConverter.convertExpressionToParsedSyntaxUnit(generatesExpressionStrRepresentation)
                 );
                 syntaxUnitExpression.getSyntaxUnitExpressions().add(currentSyntaxUnitExpression);
 
-                if (allGeneratedExpressions.size() > GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT) {
+                if (allGeneratedExpressions.size() > GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT) {
                     return;
                 }
 

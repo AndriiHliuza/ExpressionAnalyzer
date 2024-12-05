@@ -1,8 +1,8 @@
-package org.pzks.utils;
+package org.pzks.settings;
 
-import org.pzks.utils.args.processor.BoolArg;
-import org.pzks.utils.args.processor.ProgramArgsProcessor;
-import org.pzks.utils.args.processor.PropertyArg;
+import org.pzks.settings.args.processor.BoolArg;
+import org.pzks.settings.args.processor.ProgramArgsProcessor;
+import org.pzks.settings.args.processor.PropertyArg;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +18,8 @@ public class Configuration {
     private final long numberOfGeneratedExpressionsLimit;
     private final boolean showWarnings;
 
+    private final boolean enableDataflowSystemSimulation;
+
     public Configuration() {
         showVerboseOutput = false;
         shouldFixExpression = true;
@@ -27,6 +29,8 @@ public class Configuration {
         buildBinaryParallelCalculationTree = false;
         numberOfGeneratedExpressionsLimit = -1L;
         showWarnings = true;
+
+        enableDataflowSystemSimulation = false;
     }
 
     public Configuration(ProgramArgsProcessor programArgsProcessor) {
@@ -38,14 +42,15 @@ public class Configuration {
         buildBinaryParallelCalculationTree = programArgsProcessor.shouldBuildBinaryParallelCalculationTree();
         if (programArgsProcessor.shouldRemoveLimitOfGeneratedExpressionsBasedOnProperty()) {
             numberOfGeneratedExpressionsLimit = Long.MAX_VALUE;
-            GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT = Long.MAX_VALUE;
+            GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT = Long.MAX_VALUE;
         } else {
             numberOfGeneratedExpressionsLimit = programArgsProcessor.getLimitNumberOfGeneratedExpressionsBasedOnProperty();
-            if (numberOfGeneratedExpressionsLimit != -1L && GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT != numberOfGeneratedExpressionsLimit) {
-                GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT = numberOfGeneratedExpressionsLimit;
+            if (numberOfGeneratedExpressionsLimit != -1L && GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT != numberOfGeneratedExpressionsLimit) {
+                GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT = numberOfGeneratedExpressionsLimit;
             }
         }
         showWarnings = programArgsProcessor.shouldShowWarnings();
+        enableDataflowSystemSimulation = programArgsProcessor.shouldEnableDataflowSystemSimulation();
     }
 
     public Configuration(
@@ -56,7 +61,8 @@ public class Configuration {
             boolean buildParallelCalculationTree,
             boolean buildBinaryParallelCalculationTree,
             long numberOfGeneratedExceptionsLimit,
-            boolean showWarnings
+            boolean showWarnings,
+            boolean enableDataflowSystemSimulation
     ) {
         this.showVerboseOutput = showVerboseOutput;
         this.shouldFixExpression = shouldFixExpression;
@@ -65,10 +71,12 @@ public class Configuration {
         this.buildParallelCalculationTree = buildParallelCalculationTree;
         this.buildBinaryParallelCalculationTree = buildBinaryParallelCalculationTree;
         this.numberOfGeneratedExpressionsLimit = numberOfGeneratedExceptionsLimit;
-        if (numberOfGeneratedExpressionsLimit != -1L && GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT != numberOfGeneratedExceptionsLimit) {
-            GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT = numberOfGeneratedExceptionsLimit;
+        if (numberOfGeneratedExpressionsLimit != -1L && GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT != numberOfGeneratedExceptionsLimit) {
+            GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT = numberOfGeneratedExceptionsLimit;
         }
         this.showWarnings = showWarnings;
+
+        this.enableDataflowSystemSimulation = enableDataflowSystemSimulation;
     }
 
     public boolean shouldShowVerboseOutput() {
@@ -102,4 +110,9 @@ public class Configuration {
     public boolean shouldShowWarnings() {
         return showWarnings;
     }
+
+    public boolean shouldEnableDataflowSystemSimulation() {
+        return enableDataflowSystemSimulation;
+    }
+
 }

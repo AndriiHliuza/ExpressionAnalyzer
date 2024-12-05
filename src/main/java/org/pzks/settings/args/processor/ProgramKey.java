@@ -1,6 +1,6 @@
-package org.pzks.utils.args.processor;
+package org.pzks.settings.args.processor;
 
-import org.pzks.utils.GlobalSettings;
+import org.pzks.settings.GlobalSettings;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,14 +40,15 @@ public enum ProgramKey {
             Set number of generated expressions on property processing stage.
             Usage: --expr-gen-limit=<number>.
             Note: Default is up to ~%s expressions if not specified.
-            """.formatted(GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT)
+            """.formatted(GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT)
     ),
     NO_LIMIT_FOR_NUMBER_OF_PROPERTY_BASED_EXPRESSIONS_GENERATED("--expr-gen-no-limit", """
             Removes default limit of %s expressions for number of generated expressions on property processing stage.
             Note: This may result in large CPU and RAM consumption!
-            """.formatted(GlobalSettings.NUMBER_OF_GENERATED_EXCEPTIONS_LIMIT)
+            """.formatted(GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT)
     ),
     NO_WARNINGS("--no-warnings", "Turns off any warnings"),
+    DATAFLOW("--dataflow", "Enables simulation of dataflow system"),
     HELP("--help", "Show manual");
 
     private final String value;

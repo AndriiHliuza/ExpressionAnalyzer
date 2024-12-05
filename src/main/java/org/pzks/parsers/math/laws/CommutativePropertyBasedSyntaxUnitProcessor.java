@@ -1,6 +1,7 @@
 package org.pzks.parsers.math.laws;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 import org.pzks.parsers.optimizers.AdditionAndSubtractionOperationsParallelizationOptimizer;
 import org.pzks.parsers.optimizers.ExpressionOptimizer;
 import org.pzks.parsers.optimizers.MultiplicationAndDivisionOperationsParallelizationOptimizer;
@@ -99,7 +100,7 @@ public class CommutativePropertyBasedSyntaxUnitProcessor {
 
     private void processSyntaxUnitsWithoutMultiplicationOperationsBasedOnSyntaxContainersWeights(List<SyntaxUnit> providedSyntaxUnits) throws Exception {
         if (!providedSyntaxUnits.isEmpty()) {
-            SyntaxUnit parsedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(providedSyntaxUnits));
+            SyntaxUnit parsedSyntaxUnit = ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(providedSyntaxUnits));
             ExpressionSimplifier expressionSimplifier = new ExpressionSimplifier(parsedSyntaxUnit);
             SyntaxUnit simplifiedSyntaxUnit = expressionSimplifier.getSimplifiedSyntaxUnit();
             ExpressionOptimizer expressionOptimizer = new ExpressionOptimizer(simplifiedSyntaxUnit);
@@ -178,7 +179,7 @@ public class CommutativePropertyBasedSyntaxUnitProcessor {
             List<List<SyntaxUnit>> otherSyntaxUnitsGroupsWithoutSyntaxContainers = new ArrayList<>();
             for (int i = 0; i < providedSyntaxUnitsGroups.size(); i++) {
                 List<SyntaxUnit> syntaxUnitsGroup = providedSyntaxUnitsGroups.get(i);
-                SyntaxUnit parsedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnitsGroup));
+                SyntaxUnit parsedSyntaxUnit = ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnitsGroup));
                 MultiplicationAndDivisionOperationsParallelizationOptimizer.replaceDivisionWithMultiplication(parsedSyntaxUnit.getSyntaxUnits());
                 AdditionAndSubtractionOperationsParallelizationOptimizer.replaceSubtractionWithAddition(parsedSyntaxUnit.getSyntaxUnits());
                 syntaxUnitsGroup = parsedSyntaxUnit.getSyntaxUnits();
@@ -252,7 +253,7 @@ public class CommutativePropertyBasedSyntaxUnitProcessor {
                     }
                 }
 
-                SyntaxUnit processedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(sortedSyntaxUnitsInGroupBySyntaxContainerWeights));
+                SyntaxUnit processedSyntaxUnit = ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(sortedSyntaxUnitsInGroupBySyntaxContainerWeights));
                 ExpressionSimplifier expressionSimplifierForProcessedSyntaxUnit = new ExpressionSimplifier(processedSyntaxUnit);
                 processedSyntaxUnit = expressionSimplifierForProcessedSyntaxUnit.getSimplifiedSyntaxUnit();
                 ExpressionOptimizer expressionOptimizerForProcessedSyntaxUnit = new ExpressionOptimizer(processedSyntaxUnit);
@@ -283,11 +284,11 @@ public class CommutativePropertyBasedSyntaxUnitProcessor {
 
     public SyntaxUnit getProcessedSyntaxUnit() throws Exception {
         ExpressionSimplifier expressionSimplifier = new ExpressionSimplifier(
-                ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits))
+                ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnits))
         );
         syntaxUnits = expressionSimplifier.getSimplifiedSyntaxUnit().getSyntaxUnits();
 
-        return ExpressionParser
-                .convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
+        return ExpressionConverter
+                .convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnits));
     }
 }

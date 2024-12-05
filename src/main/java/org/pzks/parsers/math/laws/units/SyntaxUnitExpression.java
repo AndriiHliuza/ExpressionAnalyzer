@@ -1,6 +1,7 @@
 package org.pzks.parsers.math.laws.units;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 import org.pzks.units.SyntaxUnit;
 
 import java.io.BufferedWriter;
@@ -38,7 +39,7 @@ public class SyntaxUnitExpression {
     private void printTreeOfDependentSyntaxUnitExpressions(List<SyntaxUnitExpression> syntaxUnitExpressions, String levelPrefix) {
         for (int i = 0; i < syntaxUnitExpressions.size(); i++) {
             SyntaxUnitExpression syntaxUnitExpression = syntaxUnitExpressions.get(i);
-            System.out.println(spaceBuilder + levelPrefix + (i + 1) + ") " + ExpressionParser.getExpressionAsString(syntaxUnitExpression.syntaxUnit.getSyntaxUnits()) + "\n");
+            System.out.println(spaceBuilder + levelPrefix + (i + 1) + ") " + ExpressionConverter.getExpressionAsString(syntaxUnitExpression.syntaxUnit.getSyntaxUnits()) + "\n");
             if (!syntaxUnitExpression.getSyntaxUnitExpressions().isEmpty()) {
                 List<SyntaxUnitExpression> internalSyntaxUnitExpressions = syntaxUnitExpression.getSyntaxUnitExpressions();
                 spaceBuilder.append(" ".repeat(5));
@@ -57,7 +58,7 @@ public class SyntaxUnitExpression {
     private void saveTreeOfDependentSyntaxUnitExpressions(List<SyntaxUnitExpression> syntaxUnitExpressions, String levelPrefix, BufferedWriter writer) throws Exception {
         for (int i = 0; i < syntaxUnitExpressions.size(); i++) {
             SyntaxUnitExpression syntaxUnitExpression = syntaxUnitExpressions.get(i);
-            writer.write(fileSpaceBuilder + levelPrefix + (i + 1) + ") " + ExpressionParser.getExpressionAsString(syntaxUnitExpression.syntaxUnit.getSyntaxUnits()) + "\n\n");
+            writer.write(fileSpaceBuilder + levelPrefix + (i + 1) + ") " + ExpressionConverter.getExpressionAsString(syntaxUnitExpression.syntaxUnit.getSyntaxUnits()) + "\n\n");
 
             if (!syntaxUnitExpression.getSyntaxUnitExpressions().isEmpty()) {
                 List<SyntaxUnitExpression> internalSyntaxUnitExpressions = syntaxUnitExpression.getSyntaxUnitExpressions();

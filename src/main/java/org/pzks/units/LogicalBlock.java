@@ -1,6 +1,7 @@
 package org.pzks.units;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 
 import java.util.Collections;
 import java.util.List;
@@ -88,6 +89,6 @@ public class LogicalBlock extends SyntaxContainer {
 
     @Override
     public String getValue() {
-        return getDetails().get("openingBracket") + ExpressionParser.getExpressionAsString(getSyntaxUnits()) + getDetails().get("closingBracket");
+        return getDetails().get("openingBracket") + ExpressionConverter.getExpressionAsString(getSyntaxUnits()) + getDetails().get("closingBracket");
     }
 }

@@ -1,6 +1,7 @@
 package org.pzks.parsers.parallelization;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 import org.pzks.units.Function;
 import org.pzks.units.SyntaxUnit;
 import org.pzks.utils.trees.BinaryTreeNode;
@@ -27,7 +28,7 @@ public class NaryParallelExpressionTreeBuilder {
         NaryTreeNode naryTreeNode = new NaryTreeNode();
         String value = binaryTreeNode.getValue();
         if (value.matches("^\\p{Alpha}+\\w*\\s*\\(.*\\)\\s*$")) {
-            SyntaxUnit syntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(value);
+            SyntaxUnit syntaxUnit = ExpressionConverter.convertExpressionToParsedSyntaxUnit(value);
             if (syntaxUnit.getSyntaxUnits().getFirst() instanceof Function function) {
                 List<SyntaxUnit> functionParams = function.getSyntaxUnits();
                 naryTreeNode.setValue(function.getSimplifiedFunctionSignature());

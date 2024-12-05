@@ -1,7 +1,7 @@
 package org.pzks.parsers.parallelization;
 
 import org.pzks.units.SyntaxUnit;
-import org.pzks.utils.GlobalSettings;
+import org.pzks.settings.GlobalSettings;
 import org.pzks.utils.trees.BinaryTreeNode;
 import org.pzks.utils.trees.NaryTreeNode;
 import org.pzks.utils.trees.TreeNode;

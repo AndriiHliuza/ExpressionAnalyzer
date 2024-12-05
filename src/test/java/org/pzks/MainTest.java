@@ -1,15 +1,11 @@
 package org.pzks;
 
-import org.pzks.parsers.ExpressionParser;
-import org.pzks.utils.Color;
-import org.pzks.utils.Configuration;
-import org.pzks.utils.GlobalSettings;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.settings.Configuration;
+import org.pzks.settings.GlobalSettings;
 import org.pzks.utils.Statistics;
-import org.pzks.utils.args.processor.BoolArg;
-import org.pzks.utils.args.processor.PropertyArg;
+import org.pzks.settings.args.processor.BoolArg;
 
-import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 
 class MainTest {
@@ -154,6 +150,8 @@ class MainTest {
         String test79= "a-b*(k-t+(f-g)*(f*5.9-q)+(w-y*(m-1))/p)-(x-3)*(x+3)/(d+q-w)";
         String test80= "cossfdadfaaf(a+b, c+d, f+g)";
         String test81= "a+b+c*d-cos(a, b + c)";
+        String test82= "a+b+c*d-cos(a * f, b + c, g / d)+sin()";
+        String test83= "a";
         long startTime = System.nanoTime();
 
         Configuration configuration = new Configuration(
@@ -164,15 +162,21 @@ class MainTest {
                 true,
                 false,
                 -1L,
+                true,
                 true
         );
         GlobalSettings.configure(configuration);
 
-        ExpressionParser.parse(test78);
+        ExpressionProcessor.process(test79);
         long endTime = System.nanoTime();
 
         Statistics.displayTime(startTime, endTime);
 
+//        List<String> a = new ArrayList<>();
+//        a.add(0, "a");
+//        a.add(1, null);
+//        a.add(2, "b");
+//        System.out.println(a);
 //        JFrame frame = new JFrame("JTable Example");
 //        String[] columns = {"ID", "Name", "Age"};
 //        Object[][] data = {

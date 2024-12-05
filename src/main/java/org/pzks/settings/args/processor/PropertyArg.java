@@ -1,4 +1,4 @@
-package org.pzks.utils.args.processor;
+package org.pzks.settings.args.processor;
 
 public enum PropertyArg implements ProgramKeyArg {
     DEFAULT,

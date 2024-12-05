@@ -1,6 +1,7 @@
 package org.pzks.fixers;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 import org.pzks.units.*;
 import org.pzks.units.Number;
 
@@ -20,7 +21,7 @@ public class ExpressionFixer {
     }
 
     public SyntaxUnit getFixedSyntaxUnit() throws Exception {
-        return ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
+        return ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnits));
     }
 
     private void fix() throws Exception {

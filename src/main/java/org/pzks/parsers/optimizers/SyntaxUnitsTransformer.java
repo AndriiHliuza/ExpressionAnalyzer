@@ -1,6 +1,7 @@
 package org.pzks.parsers.optimizers;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 import org.pzks.units.LogicalBlock;
 import org.pzks.units.Operation;
 import org.pzks.units.SyntaxContainer;
@@ -20,17 +21,17 @@ public class SyntaxUnitsTransformer {
         String expressionBeforeOpeningTheBrackets;
         String expressionAfterOpeningTheBrackets;
         do {
-            expressionBeforeOpeningTheBrackets = ExpressionParser.getExpressionAsString(syntaxUnits);
+            expressionBeforeOpeningTheBrackets = ExpressionConverter.getExpressionAsString(syntaxUnits);
             openBracketsAfterPlusOrMinusOperations(syntaxUnits);
-            expressionAfterOpeningTheBrackets = ExpressionParser.getExpressionAsString(syntaxUnits);
+            expressionAfterOpeningTheBrackets = ExpressionConverter.getExpressionAsString(syntaxUnits);
         } while (!expressionBeforeOpeningTheBrackets.equals(expressionAfterOpeningTheBrackets));
 
         return this;
     }
 
     public List<SyntaxUnit> getTransformedSyntaxUnits() throws Exception {
-        return ExpressionParser
-                .convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits))
+        return ExpressionConverter
+                .convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnits))
                 .getSyntaxUnits();
     }
 

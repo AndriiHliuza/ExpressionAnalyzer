@@ -1,6 +1,7 @@
 package org.pzks.parsers.optimizers;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 import org.pzks.units.SyntaxUnit;
 
 import java.util.List;
@@ -21,6 +22,6 @@ public class ExpressionOptimizer {
     }
 
     public SyntaxUnit getOptimizedSyntaxUnit() throws Exception {
-        return ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnits));
+        return ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnits));
     }
 }

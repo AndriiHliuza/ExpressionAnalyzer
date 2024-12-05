@@ -1,7 +1,6 @@
-package org.pzks.utils.args.processor;
+package org.pzks.settings.args.processor;
 
 import org.pzks.utils.Color;
-import org.pzks.utils.GlobalSettings;
 import org.pzks.utils.HeadlinePrinter;
 
 import java.util.ArrayList;
@@ -117,6 +116,10 @@ public class ProgramArgsProcessor {
 
     public boolean shouldRemoveLimitOfGeneratedExpressionsBasedOnProperty() {
         return programKeys.contains(ProgramKey.NO_LIMIT_FOR_NUMBER_OF_PROPERTY_BASED_EXPRESSIONS_GENERATED.getValue());
+    }
+
+    public boolean shouldEnableDataflowSystemSimulation() {
+        return programKeys.contains(ProgramKey.DATAFLOW.getValue());
     }
 
     public String getExpression() {

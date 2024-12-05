@@ -1,6 +1,7 @@
 package org.pzks.units;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,6 +136,6 @@ public class Function extends SyntaxContainer {
 
     @Override
     public String getValue() {
-        return getDetails().get("name") + getDetails().get("openingBracket") + ExpressionParser.getExpressionAsString(getSyntaxUnits()) + getDetails().get("closingBracket");
+        return getDetails().get("name") + getDetails().get("openingBracket") + ExpressionConverter.getExpressionAsString(getSyntaxUnits()) + getDetails().get("closingBracket");
     }
 }

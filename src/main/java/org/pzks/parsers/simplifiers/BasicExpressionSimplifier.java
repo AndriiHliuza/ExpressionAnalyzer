@@ -1,7 +1,8 @@
 package org.pzks.parsers.simplifiers;
 
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 import org.pzks.units.LogicalBlock;
 import org.pzks.units.SyntaxUnit;
 
@@ -68,11 +69,11 @@ public class BasicExpressionSimplifier {
     }
 
     public BasicExpressionSimplifier removeOuterBracketsForRootExpression() throws Exception {
-        SyntaxUnit rootSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(expression);
+        SyntaxUnit rootSyntaxUnit = ExpressionConverter.convertExpressionToParsedSyntaxUnit(expression);
         if (rootSyntaxUnit instanceof LogicalBlock logicalBlock && logicalBlock.getSyntaxUnits().size() == 1) {
             rootSyntaxUnit.setSyntaxUnits(logicalBlock.getSyntaxUnits());
         }
-        expression = ExpressionParser.getExpressionAsString(rootSyntaxUnit.getSyntaxUnits());
+        expression = ExpressionConverter.getExpressionAsString(rootSyntaxUnit.getSyntaxUnits());
 
         return this;
     }

@@ -1,10 +1,10 @@
 package org.pzks.parsers.parallelization;
 
-import org.pzks.parsers.ExpressionParser;
 import org.pzks.parsers.SyntaxUnitsProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 import org.pzks.parsers.optimizers.AdditionAndSubtractionOperationsParallelizationOptimizer;
 import org.pzks.parsers.optimizers.MultiplicationAndDivisionOperationsParallelizationOptimizer;
-import org.pzks.utils.GlobalSettings;
+import org.pzks.settings.GlobalSettings;
 import org.pzks.utils.SyntaxUnitsValidationUtil;
 import org.pzks.utils.trees.BinaryTreeNode;
 import org.pzks.units.*;
@@ -19,10 +19,10 @@ public class BinaryParallelExpressionTreeBuilder {
     private List<String> warnings;
 
     public BinaryParallelExpressionTreeBuilder(SyntaxUnit syntaxUnit) throws Exception {
-        SyntaxUnit convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(syntaxUnit.getSyntaxUnits()));
+        SyntaxUnit convertedSyntaxUnit = ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(syntaxUnit.getSyntaxUnits()));
         MultiplicationAndDivisionOperationsParallelizationOptimizer.replaceDivisionWithMultiplication(convertedSyntaxUnit.getSyntaxUnits());
         AdditionAndSubtractionOperationsParallelizationOptimizer.replaceSubtractionWithAddition(convertedSyntaxUnit.getSyntaxUnits());
-        convertedSyntaxUnit = ExpressionParser.convertExpressionToParsedSyntaxUnit(ExpressionParser.getExpressionAsString(convertedSyntaxUnit.getSyntaxUnits()));
+        convertedSyntaxUnit = ExpressionConverter.convertExpressionToParsedSyntaxUnit(ExpressionConverter.getExpressionAsString(convertedSyntaxUnit.getSyntaxUnits()));
 
         warnings = getWarningsIfBuildingTheParallelTreeIsForbidden(convertedSyntaxUnit.getSyntaxUnits());
 

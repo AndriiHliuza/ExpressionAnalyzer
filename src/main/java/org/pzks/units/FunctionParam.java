@@ -1,6 +1,7 @@
 package org.pzks.units;
 
-import org.pzks.parsers.ExpressionParser;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.parsers.converters.ExpressionConverter;
 
 import javax.naming.OperationNotSupportedException;
 import java.util.List;
@@ -43,6 +44,6 @@ public class FunctionParam extends SyntaxContainer {
 
     @Override
     public String getValue() {
-        return ExpressionParser.getExpressionAsString(getSyntaxUnits());
+        return ExpressionConverter.getExpressionAsString(getSyntaxUnits());
     }
 }

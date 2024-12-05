@@ -17,10 +17,9 @@ public class NaryTreeParser {
     private void process() {
         fillLevelsOfTreeNodes();
         setNumbersToNodes();
-        addInfoToValueInTreeNode();
     }
 
-    private void addInfoToValueInTreeNode() {
+    public void addNumberInfoToValueInTreeNodes() {
         addInfoToValueInTreeNode(rootNode);
     }
 

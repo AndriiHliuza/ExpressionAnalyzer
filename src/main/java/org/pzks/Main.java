@@ -1,10 +1,10 @@
 package org.pzks;
 
-import org.pzks.parsers.ExpressionParser;
-import org.pzks.utils.Configuration;
-import org.pzks.utils.GlobalSettings;
+import org.pzks.parsers.ExpressionProcessor;
+import org.pzks.settings.Configuration;
+import org.pzks.settings.GlobalSettings;
 import org.pzks.utils.Statistics;
-import org.pzks.utils.args.processor.ProgramArgsProcessor;
+import org.pzks.settings.args.processor.ProgramArgsProcessor;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -13,7 +13,7 @@ public class Main {
 
         if (programArgsProcessor.isValidUsage()) {
             GlobalSettings.configure(new Configuration(programArgsProcessor));
-            ExpressionParser.parse(programArgsProcessor.getExpression());
+            ExpressionProcessor.process(programArgsProcessor.getExpression());
         }
         long endTime = System.nanoTime();
 
