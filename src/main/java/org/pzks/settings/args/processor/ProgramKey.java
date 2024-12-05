@@ -48,8 +48,14 @@ public enum ProgramKey {
             """.formatted(GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT)
     ),
     NO_WARNINGS("--no-warnings", "Turns off any warnings"),
-    DATAFLOW("--dataflow", "Enables simulation of dataflow system"),
-    DATAFLOW_STATISTICS("--dataflow-stats", "Shows only dataflow statistics"),
+    DATAFLOW("--dataflow", """
+    Enables simulation of dataflow system
+    Note: Should be used in combination with --tree or --binary-tree
+    """),
+    DATAFLOW_STATISTICS("--dataflow-stats", """
+            Shows only dataflow statistics
+            Note: Should be used in combination with --dataflow
+            """),
     HELP("--help", "Show manual");
 
     private final String value;
