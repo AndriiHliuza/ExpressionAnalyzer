@@ -168,7 +168,7 @@ class MainTest {
         );
         GlobalSettings.configure(configuration);
 
-        ExpressionProcessor.process(test79);
+        ExpressionProcessor.process(test78);
         long endTime = System.nanoTime();
 
         Statistics.displayTime(startTime, endTime);

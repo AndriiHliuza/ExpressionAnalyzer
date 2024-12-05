@@ -65,7 +65,7 @@ public class SystemMetrics {
 
     private void calculateEfficiencyCoefficientForFirstProcessor() {
         SystemProcessor systemProcessor = systemProcessors.getFirst();
-        int totalClockCycles = systemProcessor.size();
+        int totalClockCycles = Math.max(systemProcessors.getFirst().size(), systemProcessors.getLast().size());
         int numberOfUsedClockCycles = 0;
         for (SystemOperation systemOperation : systemProcessor) {
             if (systemOperation != null) {
@@ -78,7 +78,7 @@ public class SystemMetrics {
 
     private void calculateEfficiencyCoefficientForSecondProcessor() {
         SystemProcessor systemProcessor = systemProcessors.getLast();
-        int totalClockCycles = systemProcessor.size();
+        int totalClockCycles = Math.max(systemProcessors.getFirst().size(), systemProcessors.getLast().size());
         int numberOfUsedClockCycles = 0;
         for (SystemOperation systemOperation : systemProcessor) {
             if (systemOperation != null) {
