@@ -49,11 +49,11 @@ public enum ProgramKey {
     ),
     NO_WARNINGS("--no-warnings", "Turns off any warnings"),
     DATAFLOW("--dataflow", "Enables simulation of dataflow system"),
+    DATAFLOW_STATISTICS("--dataflow-stats", "Shows only dataflow statistics"),
     HELP("--help", "Show manual");
 
     private final String value;
     private List<ProgramKeyArg> programKeyArgs;
-    private int numberParam;
     private final String description;
 
     ProgramKey(String value, String description) {

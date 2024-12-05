@@ -250,8 +250,10 @@ public class ExpressionProcessor {
                     -------------------------------
                     """);
 
-                dataflowSystem.displayDiagram();
-                System.out.println();
+                if (!GlobalSettings.CONFIGURATION.shouldShowOnlyDataflowSystemStatistics()) {
+                    dataflowSystem.displayDiagram();
+                    System.out.println();
+                }
 
                 SystemMetrics systemMetrics = dataflowSystem.getSystemMetrics();
                 System.out.println(Color.BRIGHT_MAGENTA.getAnsiValue() + "------Statistics---->" + Color.DEFAULT.getAnsiValue());

@@ -163,7 +163,8 @@ class MainTest {
                 false,
                 -1L,
                 true,
-                true
+                true,
+                false
         );
         GlobalSettings.configure(configuration);
 

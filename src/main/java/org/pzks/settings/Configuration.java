@@ -19,6 +19,7 @@ public class Configuration {
     private final boolean showWarnings;
 
     private final boolean enableDataflowSystemSimulation;
+    private final boolean showOnlyDataflowSystemStatistics;
 
     public Configuration() {
         showVerboseOutput = false;
@@ -31,6 +32,7 @@ public class Configuration {
         showWarnings = true;
 
         enableDataflowSystemSimulation = false;
+        showOnlyDataflowSystemStatistics = false;
     }
 
     public Configuration(ProgramArgsProcessor programArgsProcessor) {
@@ -51,6 +53,7 @@ public class Configuration {
         }
         showWarnings = programArgsProcessor.shouldShowWarnings();
         enableDataflowSystemSimulation = programArgsProcessor.shouldEnableDataflowSystemSimulation();
+        showOnlyDataflowSystemStatistics = programArgsProcessor.shouldShowOnlyDataflowSystemStatistics();
     }
 
     public Configuration(
@@ -62,7 +65,8 @@ public class Configuration {
             boolean buildBinaryParallelCalculationTree,
             long numberOfGeneratedExceptionsLimit,
             boolean showWarnings,
-            boolean enableDataflowSystemSimulation
+            boolean enableDataflowSystemSimulation,
+            boolean showOnlyDataflowSystemStatistics
     ) {
         this.showVerboseOutput = showVerboseOutput;
         this.shouldFixExpression = shouldFixExpression;
@@ -77,6 +81,7 @@ public class Configuration {
         this.showWarnings = showWarnings;
 
         this.enableDataflowSystemSimulation = enableDataflowSystemSimulation;
+        this.showOnlyDataflowSystemStatistics = showOnlyDataflowSystemStatistics;
     }
 
     public boolean shouldShowVerboseOutput() {
@@ -113,6 +118,10 @@ public class Configuration {
 
     public boolean shouldEnableDataflowSystemSimulation() {
         return enableDataflowSystemSimulation;
+    }
+
+    public boolean shouldShowOnlyDataflowSystemStatistics() {
+        return showOnlyDataflowSystemStatistics;
     }
 
 }

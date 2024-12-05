@@ -122,6 +122,10 @@ public class ProgramArgsProcessor {
         return programKeys.contains(ProgramKey.DATAFLOW.getValue());
     }
 
+    public boolean shouldShowOnlyDataflowSystemStatistics() {
+        return programKeys.contains(ProgramKey.DATAFLOW.getValue());
+    }
+
     public String getExpression() {
         return programKeys.getLast();
     }
