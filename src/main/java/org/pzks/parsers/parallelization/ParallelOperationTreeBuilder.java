@@ -23,11 +23,12 @@ public class ParallelOperationTreeBuilder {
             String value = naryTreeNode.getValue();
             if (value != null) {
 
-                if (basicExpressionUnitRecognizer.isValidAlphaNumericNaming(value) || basicExpressionUnitRecognizer.isFloatNumber(value)) {
+                if (value.matches("-\\d+(\\.\\d+)?") || basicExpressionUnitRecognizer.isValidAlphaNumericNaming(value) || basicExpressionUnitRecognizer.isFloatNumber(value)) {
                     naryTreeNode.setValue(null);
                 } else {
                     naryTreeNode.getChildren().removeIf(
-                            node -> basicExpressionUnitRecognizer.isValidAlphaNumericNaming(node.getValue()) ||
+                            node -> node.getValue().matches("-\\d+(\\.\\d+)?") ||
+                                    basicExpressionUnitRecognizer.isValidAlphaNumericNaming(node.getValue()) ||
                                     basicExpressionUnitRecognizer.isFloatNumber(node.getValue())
                     );
 

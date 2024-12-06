@@ -152,6 +152,7 @@ class MainTest {
         String test81= "a+b+c*d-cos(a, b + c)";
         String test82= "a+b+c*d-cos(a * f, b + c, g / d)+sin()";
         String test83= "a";
+        String test84= "a-y*k+b*t-b*f*5.9+sin(pi*R)*log(q)/sin(3*pi/2 + x*pi/2)*q+g*f*5.9-g*q-f*(d+q)*s-g*(d+q)*p";
         long startTime = System.nanoTime();
 
         Configuration configuration = new Configuration(
@@ -168,7 +169,7 @@ class MainTest {
         );
         GlobalSettings.configure(configuration);
 
-        ExpressionProcessor.process(test78);
+        ExpressionProcessor.process(test84);
         long endTime = System.nanoTime();
 
         Statistics.displayTime(startTime, endTime);
