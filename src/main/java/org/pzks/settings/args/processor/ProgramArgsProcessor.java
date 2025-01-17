@@ -31,8 +31,8 @@ public class ProgramArgsProcessor {
                 System.out.println((i + 1) + ") " + Color.BRIGHT_MAGENTA.getAnsiValue() + programKey.getValue() + Color.DEFAULT.getAnsiValue());
                 System.out.println("Description: " + programKey.getDescription() + "\n");
             }
-            System.out.println("Note: Expression should be the last argument provided!\n");
-            System.out.println(Color.YELLOW.getAnsiValue() + "Program usage: " + Color.DEFAULT.getAnsiValue() + "java -jar expressionAnalyzer.jar <program arguments> <expression>\n");
+            System.out.println(Color.YELLOW.getAnsiValue() + "Program usage: " + Color.DEFAULT.getAnsiValue() + "java -jar expressionAnalyzer.jar <program arguments> <expression>");
+            System.out.println(Color.YELLOW.getAnsiValue() + "Note: " + Color.DEFAULT.getAnsiValue() + "Expression should be the last argument provided!\n\n");
             isValidUsage = false;
         } else {
             isValidUsage = true;

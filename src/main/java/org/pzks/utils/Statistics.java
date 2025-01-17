@@ -10,8 +10,9 @@ public class Statistics {
 
     public static void displayTime (long startTime, long endTime) {
         int timeStringLength = Statistics.calculateTotalExecutionTime(startTime, endTime).toString().length();
-        System.out.println(Font.BOLD.getAnsiValue() + Color.BRIGHT_MAGENTA.getAnsiValue() + "-".repeat(26 + timeStringLength) + Color.DEFAULT.getAnsiValue());
+        String frame = Font.BOLD.getAnsiValue() + Color.BRIGHT_MAGENTA.getAnsiValue() + "-".repeat(26 + timeStringLength) + Color.DEFAULT.getAnsiValue();
+        System.out.println(frame);
         System.out.println(Font.BOLD.getAnsiValue() + Color.BRIGHT_MAGENTA.getAnsiValue() + "| TOTAL EXECUTION TIME: " + Color.DEFAULT.getAnsiValue() + Font.BOLD.getAnsiValue() + Statistics.calculateTotalExecutionTime(startTime, endTime) + Color.BRIGHT_MAGENTA.getAnsiValue() + " |");
-        System.out.println(Font.BOLD.getAnsiValue() + Color.BRIGHT_MAGENTA.getAnsiValue() + "-".repeat(26 + timeStringLength) + Color.DEFAULT.getAnsiValue());
+        System.out.println(frame);
     }
 }

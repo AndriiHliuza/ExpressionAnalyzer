@@ -7,8 +7,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum ProgramKey {
-    VERBOSE("--verbose", "Verbose output."),
-    FIX("--fix", "Fix expression if there are syntax errors."),
+    VERBOSE("--verbose", """
+            Verbose output.
+            """),
+    FIX("--fix", """
+            Fix expression if there are syntax errors.
+            """),
     OPTIMIZATION("--optimize", List.of(BoolArg.values()), """
             Optimize expression.
             Optimization is done by default.
@@ -18,14 +22,15 @@ public enum ProgramKey {
             Stream.of(BoolArg.values())
                     .map(value -> value.toString().toLowerCase())
                     .collect(Collectors.joining(","))
-    )
-    ),
-    PARALLEL_CALCULATION_TREE("--tree", "Build parallel calculation tree of the expression."),
+    )),
+    PARALLEL_CALCULATION_TREE("--tree", """
+            Build parallel calculation tree of the expression.
+            """),
     BiNARY_PARALLEL_CALCULATION_TREE("--binary-tree", """
             Build parallel calculation tree of the expression as binary tree.
             Note:
             - Can be used only in combination with --tree
-            - This will make impossible creation of trees out of expressions that contains functions.
+            - This will make impossible creation of trees out of expressions that contain functions.
             """),
     PROPERTY("--property", List.of(PropertyArg.values()), """
             Set property to use.
@@ -47,7 +52,9 @@ public enum ProgramKey {
             Note: This may result in large CPU and RAM consumption!
             """.formatted(GlobalSettings.Property.NUMBER_OF_GENERATED_EXPRESSIONS_LIMIT)
     ),
-    NO_WARNINGS("--no-warnings", "Turns off any warnings"),
+    NO_WARNINGS("--no-warnings", """
+            Turns off any warnings
+            """),
     DATAFLOW("--dataflow", """
     Enables simulation of dataflow system
     Note: Should be used in combination with --tree or --binary-tree
@@ -56,7 +63,9 @@ public enum ProgramKey {
             Shows only dataflow statistics
             Note: Should be used in combination with --dataflow
             """),
-    HELP("--help", "Show manual");
+    HELP("--help", """
+            Show manual
+            """);
 
     private final String value;
     private List<ProgramKeyArg> programKeyArgs;

@@ -25,6 +25,7 @@ import java.util.List;
 public class ExpressionProcessor {
 
     public static void process(String value) throws Exception {
+        long startTime = System.nanoTime();
         if (value.isBlank()) {
             System.out.println("\n" + Color.BRIGHT_MAGENTA.getAnsiValue() + "Expression: " + Color.DEFAULT.getAnsiValue() + "\"" + " ".repeat(value.length()) + "\"");
             System.out.println(Color.RED.getAnsiValue() + "Error: " + Color.DEFAULT.getAnsiValue() + "Can't proceed with calculations. There is no expression or it contains only white spaces!");
@@ -80,6 +81,8 @@ public class ExpressionProcessor {
 
             System.out.println();
         }
+        long endTime = System.nanoTime();
+        Statistics.displayTime(startTime, endTime);
     }
 
     private static boolean calculateAndShowErrors(String expression, SyntaxUnit parsedSyntaxUnit) {

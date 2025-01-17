@@ -1,3 +1,6 @@
+## Prerequisites
+- java 21 recommended
+
 ## Set up
 1. `cd ./ExpressionAnalyzer`
 
